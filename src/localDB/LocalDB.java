@@ -40,8 +40,6 @@ public class LocalDB {
 			conn = DriverManager.getConnection(url);
 			stat = conn.createStatement();
 
-			//stat.executeUpdate("DELETE FROM issue;");
-			//stat.executeUpdate("VACUUM");
 			int id = jo.getInt("id");
 			Date date = new Date();
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
@@ -306,17 +304,7 @@ public class LocalDB {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}finally {
-//			try {
-//				if(conn.isClosed() == false){
-//					conn.close();
-//				}
-////				if(stat.isClosed() == false){
-////					stat.close();
-////				}
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}	
+
 
 		}
 		return rs;
@@ -326,9 +314,6 @@ public class LocalDB {
 		try {
 			conn = DriverManager.getConnection(url);
 			Statement stat = conn.createStatement();
-			/*stat.executeUpdate("DELETE FROM issue;");
-			stat.executeUpdate("VACUUM");
-			stat.executeUpdate("INSERT INTO issue (id) VALUES ('" + 552139 + "');");*/
 			String value = CVrequest.getIssue("552139").get("location_credits").toString();
 			//value = org.json.simple.JSONObject.escape(value);
 			//String sql = "UPDATE issue SET location_credits ='" + value + "' WHERE id='552139';";
@@ -427,32 +412,7 @@ public class LocalDB {
 		}
 		return true;
 	}
-	
-	
-//	public static Issue getIssue(String id){
-//		Issue issue = null;
-//		try {
-//			conn = DriverManager.getConnection(url);
-//			stat = conn.createStatement();
-//			
-//			String query  = "SELECT JSON FROM issue WHERE id = ?;";
-//			PreparedStatement pre = conn.prepareStatement(query);
-//			pre.setString(1, id);
-//			ResultSet rs = pre.executeQuery();
-//			rs.next();
-//			String jsonStr = rs.getString(1);
-//			
-//			if(!jsonStr.equals("") || jsonStr != null){
-//				issue = new Issue(new JSONObject(jsonStr));
-//			}
-//			
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return issue;	
-//		
-//	}
+
 
 	/**
 	 * Returns the value of the requested field from the reqested table for the ID passed
@@ -480,41 +440,7 @@ public class LocalDB {
 		}
 		return null;		
 	}
-	
-//	public static JSONObject getLocalIssue(String id){
-//		
-//		try {
-//			conn = DriverManager.getConnection(url);
-//			stat = conn.createStatement();
-//			
-//			String sql = "SELECT * FROM issue WHERE id = ?";
-//			PreparedStatement pre = conn.prepareStatement(sql);
-//			pre.setString(1, id);
-//			
-//			ResultSet rs = pre.executeQuery();
-//			ResultSetMetaData meta = rs.getMetaData();
-//			List<List<String>> rowList = new LinkedList<List<String>>();
-//			Object val = "";
-//			
-//			while(rs.next()){
-//				List<String> colList = new LinkedList<String>();
-//				rowList.add(colList);
-//				int size = meta.getColumnCount();
-//				
-//				for(int col = 1; col <=  size; col++){
-//					val = rs.getObject(col);
-//					colList.add(val.toString());
-//				}
-//			}
-//			
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return null;
-//	}
-//	
-//	
+
 	public static ArrayList<Issue> getAllIssues(){
 		ArrayList<Issue> iList = new ArrayList<Issue>();
 		try {
@@ -583,5 +509,3 @@ public class LocalDB {
 		return iList;
 	}
 }
-
-

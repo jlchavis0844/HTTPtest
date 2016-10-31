@@ -178,5 +178,4 @@ public class AddComic {
 		scPane.setContent(issueList);
 		System.out.println("scPane: " + scPane.getHeight() + "\tissueList " + issueList.getHeight());
 	}
-
 }

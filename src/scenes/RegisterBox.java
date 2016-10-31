@@ -39,7 +39,6 @@ public class RegisterBox {
 		});
 		
 		noBtn.setOnAction(e -> window.close());
-				
 		Scene scene = new Scene(layout, 200, 100);
 		window.setScene(scene);
 		window.showAndWait();

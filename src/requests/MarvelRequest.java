@@ -44,7 +44,5 @@ public class MarvelRequest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-
 	}
 }

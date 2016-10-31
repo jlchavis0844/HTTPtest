@@ -98,11 +98,7 @@ public class CVImage {
 	}
 
 	public static boolean addVolumeImg(Volume vol, String size){
-		//		addVolumeImg(vol.getImgURL(size), vol.getID(), size);
-		//		return true;
-		//	}
-		//	
-		//	public static boolean addVolumeImg(String urlStr, String id, String size){
+
 		String urlStr = vol.getImgURL(size);
 		URL url = null;
 		HttpURLConnection conn = null;
@@ -221,25 +217,4 @@ public class CVImage {
 		
 	}
 
-//	public static BufferedImage getLocalImage(String id, String size, int type){
-//		String col = size;
-//		String table = (type == 0) ? "issue" : "volume";
-//		if(size.contains("_url"))
-//			col = size.replace("_url", "");
-//
-//		String str = "SELECT " + col + " FROM " + table + " WHERE id = '" + id + "';";
-//		System.out.println(str);
-//		ResultSet rs = LocalDB.executeQuery(str);
-//
-//		try {
-//			rs.next();
-//			String path = rs.getString(col);
-//			//String path = "./Images/volume/YxhTZW1UcU8p.png";
-//			img =  ImageIO.read(new File(path));
-//		} catch (IOException | SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return img;
-//	}
 }

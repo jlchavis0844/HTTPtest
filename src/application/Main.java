@@ -143,17 +143,8 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		//		org.json.JSONObject jo = CVrequest.getIssue("488852");
-		//		Volume test = new Volume(jo.getJSONObject("volume"));
-		//		LocalDB.addVolume(test);
-		//		new VolumePreview(test);
-		//MarvelRequest.test();
-		//		ArrayList<Volume> vols = CVrequestAsync.searchVolume("Batman", "DC");
-		//		for(Volume v: vols)
-		//			System.out.println(v.toString());
+
 		launch(args);
-		//System.out.println("to adjust");
-		//SQLQuery.getLoginInfo();
 		System.exit(0);
 	}
 
