@@ -22,10 +22,6 @@ public class Volume {
 
 	private boolean full = false;
 
-	// constructor that take in a volume json object
-	// the json object belong to an array of 
-	// volume json object that alex get from calling
-	// CVcrequest
 	public Volume (JSONObject jo){
 		this.vol = jo;
 		if(check(jo, "id")){
@@ -96,7 +92,7 @@ public class Volume {
 	public BufferedImage getLocalImg(String size){
 		String sizes[] = {"icon","thumb","tiny","small","super","screen","medium"};
 		if(vol.has(size) && ArrayUtils.contains(sizes, size)){
-			return CVImage.getLocalImage(vol.getString(size));
+			return CVImage.getLocalVolumeImg(id, size);
 		} else return null;
 	}
 	
@@ -116,9 +112,10 @@ public class Volume {
 	//return buffered image of the size given, locally if possible, remotely if needed
 	public BufferedImage getImage(String size){
 		if(vol.has(size)){
-			return CVImage.getLocalImage(vol.getString(size)); 
+			return CVImage.getLocalVolumeImg(id, size); 
 		} else if(check(vol, "image")){
 			String url = vol.getJSONObject("image").getString(size + "_url");
+			System.out.println("WARNING: Fetching online image for volume " + name);
 			return CVImage.getRemoteImage(url);
 		}
 		return null;
@@ -144,18 +141,11 @@ public class Volume {
 	public String getStartYear (){
 		return startYear;
 	}
-	/*
-	public void populate (){
-		full = true;
-	}
 
-	public boolean isFull (){
-		return full;
-	}*/
 
 	// return the private member vol
 	// which is volume json object
-	public JSONObject getVolume (){
+	public JSONObject getJSONObject(){
 		return vol;
 	}
 

@@ -16,15 +16,21 @@ public class VolumePreview extends HBox{
 	private ImageView thumb;
 	private Label infoLbl;
 
+	/**
+	 * Makes a preview of a volume, to load the image, us setImage()
+	 * @param rhVol
+	 * @param issues
+	 */
 	public VolumePreview(Volume rhVol, ArrayList<Issue> issues) {
 		super();
 
 		vol = rhVol;
 		long start = System.currentTimeMillis();
-		BufferedImage bi = vol.getImage("thumb");
-		Image image = SwingFXUtils.toFXImage(bi, null);
-		thumb = new ImageView(image);
-		System.out.println("Image fetch took :" + (System.currentTimeMillis() - start));
+		//		BufferedImage bi = vol.getImage("thumb");
+		//		Image image = SwingFXUtils.toFXImage(bi, null);
+		//		thumb = new ImageView(image);
+		thumb = new ImageView();
+		//System.out.println("Image fetch took :" + (System.currentTimeMillis() - start));
 		thumb.setFitHeight(50);
 		thumb.setFitWidth(33);
 
@@ -74,5 +80,16 @@ public class VolumePreview extends HBox{
 	 */
 	public void setVolume(Volume vol) {
 		this.vol = vol;
+	}
+
+	/**
+	 * loads the image
+	 */
+	public void setImage(){
+		if(thumb.getImage() == null){
+			BufferedImage bi = vol.getImage("thumb");
+			Image image = SwingFXUtils.toFXImage(bi, null);
+			thumb.setImage(image);
+		}
 	}
 }

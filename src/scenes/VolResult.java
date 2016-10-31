@@ -28,7 +28,7 @@ public class VolResult extends HBox {
 		String info = vol.getName() + "\n" + vol.getPublisher() + "\n" + vol.getStartYear() +
 				"\n" + vol.getCountofIssue() + " issues";
 		text.setText(info);
-		JSONObject jo = vol.getVolume();
+		JSONObject jo = vol.getJSONObject();
 		jo = jo.getJSONObject("image");
 		String url = jo.getString("thumb_url");
 		

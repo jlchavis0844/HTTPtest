@@ -2,6 +2,8 @@ package scenes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import model.*;
 import requests.CVrequest;
 import requests.CVrequestAsync;
@@ -129,19 +131,24 @@ public class AddComic {
 		if(pub.equals("") || pub == null){
 			vols = CVrequest.searchVolume(term);
 		} else {
-			vols = CVrequestAsync.searchVolume(term, pub);
+			vols = CVrequest.searchVolume(term, pub);
 		}
 
 		List<VolResult> results = new ArrayList<VolResult>();
-
+		AtomicInteger adds = new AtomicInteger(0);
 		for(Volume v: vols){
 			//leftBox.getChildren().add(new VolumeButton(v, this));
-			results.add(new VolResult(v));
+			new Thread(){ public void run(){
+				results.add(new VolResult(v));
+				System.out.println("tread #" + this.getId()+ " added # " + adds.incrementAndGet());
+			}}.start();
 		}
-
+		
+		int volSize = vols.size();
+		while(volSize != adds.get()){};//wait for threads to catchup
+		
 		ObservableList<VolResult> obvRes = FXCollections.observableList(results);
 		list.setItems(obvRes);
-
 	}
 
 	public void  getIssues(String volID){
@@ -171,5 +178,4 @@ public class AddComic {
 		scPane.setContent(issueList);
 		System.out.println("scPane: " + scPane.getHeight() + "\tissueList " + issueList.getHeight());
 	}
-
 }

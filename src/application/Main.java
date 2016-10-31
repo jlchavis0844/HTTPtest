@@ -3,6 +3,9 @@ package application;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.simple.JSONObject;
 
@@ -19,6 +22,7 @@ import model.Volume;
 import requests.CVrequest;
 import requests.CVrequestAsync;
 import requests.MarvelRequest;
+import requests.SQLQuery;
 import scenes.AddComic;
 import scenes.DetailView;
 import scenes.IssueLoadScreen;
@@ -39,17 +43,10 @@ public class Main extends Application {
 	@SuppressWarnings("rawtypes")
 	private Stage window;
 	private BorderPane layout;
-	private ListView<VolResult> list;
-	private ListView<IssueResult> issueList;
 	private static ArrayList<Issue> added;
 	private static ArrayList<Issue> allIssues;
 	private static ArrayList<Volume> allVols;
-	private static List<IssuePreview> prevs;
 	private static List<VolumePreview> volPreviews;
-	private static ListView<IssuePreview> leftList;
-	private static ListView<VolumePreview> volListView;
-	private static ObservableList<IssuePreview> obvRes;
-	private static ObservableList<VolumePreview> volObvRes;
 	private static ScrollPane leftScroll;
 	private HBox hbox;
 	private Button addButton;
@@ -75,42 +72,6 @@ public class Main extends Application {
 			allIssues = new ArrayList<Issue>();
 		}
 
-		//		System.out.println("generating previews");
-		//		start = System.currentTimeMillis();
-		//		prevs = new ArrayList<IssuePreview>();
-		//
-		//		Long pStart = (long) 0.0;
-		//		Vector<Long> times = new Vector<Long>();
-		//		
-		//		for(Issue i: allIssues){
-		//			pStart = System.currentTimeMillis();
-		//			prevs.add(new IssuePreview(i));
-		//			times.addElement(System.currentTimeMillis() - pStart);
-		//		}
-		//		System.out.println("Done loading previews after " + (System.currentTimeMillis() - start));
-		//		
-		//		Long total = (long)0.0;
-		//		for(Long t: times){
-		//			total = total + t;
-		//		}
-		//		
-		//		System.out.println("Avg preview build time: " +(total / times.size()));
-		//		
-		//		
-		//		
-		//		System.out.println("building window");
-		//		start = System.currentTimeMillis();
-		//		leftList = new ListView<>();
-		//		leftList.setPrefHeight(1000);
-		//		obvRes = FXCollections.observableList(prevs);
-		//		leftList.setItems(obvRes);
-		//
-		//		leftScroll = new ScrollPane();
-		//		leftScroll.setPrefHeight(1000);
-		//		leftScroll.setContent(leftList);
-		//		leftScroll.setPadding(new Insets(10));
-		//		layout.setLeft(leftScroll);
-
 		start = System.currentTimeMillis();
 		allVols = LocalDB.getAllVolumes();
 		System.out.println("volume loading took " + (System.currentTimeMillis()-start));
@@ -120,15 +81,11 @@ public class Main extends Application {
 		}
 		volPreviews = new ArrayList<VolumePreview>();
 
+		start = System.currentTimeMillis();
 		for(Volume v: allVols){
 			volPreviews.add(new VolumePreview(v, allIssues));
 		}
-
-
-		//		volListView = new ListView<>();
-		//		volListView.setPrefHeight(1000);
-		//		volObvRes = FXCollections.observableList(volPreviews);
-		//		volListView.setItems(volObvRes);
+		System.out.println("time to load all volumes " + (System.currentTimeMillis() - start));
 
 		treeView = new TreeView<VolumePreview>(buildRoot());
 		treeView.setPrefWidth(500);
@@ -143,9 +100,11 @@ public class Main extends Application {
 						((VolumeCell) newValue).setIssues(allIssues);
 				} else {
 					TreeItem<IssuePreview> ti = (TreeItem<IssuePreview>) treeView.getSelectionModel().getSelectedItem();
-					if(ti.getValue() != null){
-						Issue issue = ti.getValue().getIssue();
-						layout.setRight(new DetailView(issue));
+					if(ti != null){	
+						if(ti.getValue() != null){
+							Issue issue = ti.getValue().getIssue();
+							layout.setRight(new DetailView(issue));
+						} else System.out.println("something went wrong loading issue");
 					} else System.out.println("something went wrong loading issue");
 				}
 				boolean expanded = ((TreeItem) treeView.getSelectionModel().getSelectedItem()).isExpanded();
@@ -153,7 +112,7 @@ public class Main extends Application {
 			}
 
 		});
-		
+
 		leftScroll = new ScrollPane();
 		leftScroll.setPrefHeight(1000);
 		leftScroll.setMaxHeight(1080);
@@ -173,52 +132,27 @@ public class Main extends Application {
 			updateLeft();
 		});
 
-		/*new AddComic(added);
-
-		for(Issue i: added){
-			LocalDB.addIssue(i);
-		}
-
-		VBox details = new VBox(10);
-		Vector<DetailView> vec = new Vector<>();
-
-		for(Issue i: added){
-			vec.add(new DetailView(i));
-		}
-
-		details.getChildren().addAll(vec);*/
-
-		//Scene scene = new Scene(new ScrollPane(details), 1900, 1050);
-		
 		Scene scene = new Scene(layout, 1900, 1050);
-		
-		String style= getClass().getResource("application.css").toExternalForm();
-		//addButton.getStylesheets().add(style);
+		String style= getClass().getResource("../application.css").toExternalForm();
+		System.out.println(style);
 		scene.getStylesheets().add(style);
 		window.setScene(scene);
 		window.show();
 		System.out.println("Done loading after " + (System.currentTimeMillis() - start));
+		backgroundLoadVols();
 	}
 
 	public static void main(String[] args) {
-		//		org.json.JSONObject jo = CVrequest.getIssue("488852");
-		//		Volume test = new Volume(jo.getJSONObject("volume"));
-		//		LocalDB.addVolume(test);
-		//		new VolumePreview(test);
-		//MarvelRequest.test();
-//		ArrayList<Volume> vols = CVrequestAsync.searchVolume("Batman", "DC");
-//		for(Volume v: vols)
-//			System.out.println(v.toString());
-		launch(args);
-		//System.out.println("to adjust");
 
+		launch(args);
 		System.exit(0);
 	}
 
 	public static void updateLeft(){
 		new IssueLoadScreen(added, allIssues, volPreviews);
 		treeView.setRoot(buildRoot());
-		added.clear();		
+		added.clear();
+		backgroundLoadIssues();
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -235,4 +169,42 @@ public class Main extends Application {
 		return root;
 	}
 
+	/**
+	 * Loads all issues for all volumes in the background
+	 */
+	public static void backgroundLoadIssues(){
+		ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+		for(Object obj : treeView.getRoot().getChildren()){
+			executorService.execute(new Runnable() {
+				public void run(){
+					((VolumeCell) obj).setIssues(allIssues);
+				}
+			});
+		}
+		executorService.shutdown();
+	}
+
+	/**
+	 * loads all the volume images in the back ground
+	 */
+	public static void backgroundLoadVols(){
+		ExecutorService executorService = Executors.newFixedThreadPool(10);
+		int volNum = allVols.size();
+		AtomicInteger counter = new AtomicInteger(0);
+
+		for(Object obj : treeView.getRoot().getChildren()){
+			executorService.execute(new Runnable() {
+				public void run(){
+					System.out.println(counter.incrementAndGet() + " ?= " + volNum);
+					((VolumePreview)((VolumeCell) obj).getValue()).setImage();
+					System.out.println("done loading " + ((VolumePreview)((VolumeCell) obj).getValue()).getVolName());
+				}
+			});
+		}
+		executorService.shutdown();
+
+		while(counter.get() != volNum){};//wait here to load volumes
+		backgroundLoadIssues();//start loading issues
+	}
 }

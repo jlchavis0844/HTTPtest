@@ -53,7 +53,9 @@ public class IssueLoadScreen {
 			if(foundIndex == -1){
 				volPreviews.add(new VolumePreview(i.getVolume(), allIssues));
 			}
-
+			for(VolumePreview pv: volPreviews){
+				pv.setImage();
+			}
 
 		}
 		stage.close();
