@@ -1,5 +1,16 @@
+/*
+ * To use in same package use:
+ * scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+ * 
+ * To use from a different package use:
+ * scene.getStylesheets().add(getClass().getResource("../application/application.css").toExternalForm());
+ */
+
+
 .root{
-    -fx-background-color:#2B2B2B;
+	/* Main background color */
+    -fx-background-color: #2B2B2B;
+    /* Text color */
     -fx-text-fill:#BBBBBB;
 
 
@@ -10,7 +21,10 @@
     -fx-cell-hover-color: #0D293E;
 
     /* The color of the font */
-    -fx-text-inner-color: #FFFFFF;
+    -fx-text-inner-color: #DDDDDD;
+    
+    /* The opacity level to use for the "disabled" class.*/
+    -fx-disabled-opacity: 0.5;
 }
 
 
@@ -59,6 +73,10 @@ Default button theme
     -fx-background-radius: 5;
 }
 
+.button:disabled {
+    -fx-opacity: -fx-disabled-opacity;
+}
+
 
 
 
@@ -87,10 +105,71 @@ Searching fields
 *********************************************/
 .text-field{
     -fx-background-color: #49454A;
-    -fx-text-fill: -fx-text-inner-color;
+    -fx-text-fill:  -fx-text-inner-color;
+    -fx-prompt-text-fill: #999999;
+    -fx-background-radius: 100;
 }
 
 
+/********************************************
+          ScrollPane
+Theme for the scroll pane
+*********************************************/
+.scroll-pane {
+	-fx-background-color: -fx-control-inner-background;
+	-fx-border-color: #6E6E6E;
+	
+}
+
+.scroll-pane > .corner {
+	-fx-background-color: -fx-control-inner-background;
+}
+
+
+
+/********************************************
+          Scroll Bar
+Theme of all scroll bars
+*********************************************/
+.scroll-bar{
+	
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: -fx-control-inner-background;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: -fx-control-inner-background;
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #5C5C5C;
+    -fx-background-radius: 0.5em; /* makes sure this remains circular */
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #5C5C5C;
+    -fx-background-radius: 0.5em; /* makes sure this remains circular */
+}
+
+.scroll-bar > .thumb:hover {
+	-fx-background-color: #6E6E6E;
+}
+
+
+
+
+/********************************************
+          HTML
+Theme of all scroll bars
+*********************************************/
+
+body {
+    background-color: #3C3F41;
+    font-family: Arial, Helvetica, san-serif;
+	color: #DDDDDD;
+}
 
 
 /********************************************
@@ -99,14 +178,6 @@ The collection LIST (not tree)
 *********************************************/
 .tree-view {
     -fx-background-color: -fx-control-inner-background;
-}
-
-.tree-view .scroll-bar:vertical{
-
-}
-
-.tree-view .scroll-bar:horizontal{
-
 }
 
 .tree-cell {
@@ -118,3 +189,4 @@ The collection LIST (not tree)
     -fx-background-color: -fx-cell-hover-color;
     -fx-text-fill: -fx-text-inner-color;
 }
+

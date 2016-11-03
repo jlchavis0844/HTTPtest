@@ -121,6 +121,8 @@ public class AddComic {
 		BorderPane.setMargin(topBox, new javafx.geometry.Insets(10));
 
 		Scene scene = new Scene(layout, 1900, 1050);
+		String style= getClass().getResource("../application.css").toExternalForm();
+		scene.getStylesheets().add(style);
 		window.setScene(scene);
 		window.showAndWait();
 	}
@@ -178,4 +180,5 @@ public class AddComic {
 		scPane.setContent(issueList);
 		System.out.println("scPane: " + scPane.getHeight() + "\tissueList " + issueList.getHeight());
 	}
+
 }

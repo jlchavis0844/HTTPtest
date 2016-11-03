@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -23,17 +24,18 @@ import model.Volume;
 public class CVImage {
 	private static BufferedImage img = null;
 
-	public static void addAllImages(JSONObject jo){
-		JSONObject joImg = jo.getJSONObject("image");
+	public static void addAllImages(Issue i){
+		
+		JSONObject joImg = i.getFullObject().getJSONObject("image");
 		String names[] = JSONObject.getNames(joImg);
-		String id = jo.get("id").toString();
+		String id = i.getID();
 
 		String urlStr = "";
 		int nameLen = names.length;
 
-		for(int i = 0; i < nameLen; i++){
-			urlStr = joImg.get(names[i]).toString();
-			CVImage.addIssueImg(urlStr, id, names[i]);
+		for(int j = 0; j < nameLen; j++){
+			urlStr = joImg.get(names[j]).toString();
+			CVImage.addIssueImg(i, names[j].replace("_url", ""));
 		}
 	}
 
@@ -56,22 +58,13 @@ public class CVImage {
 	}
 
 	public static boolean addIssueImg(Issue i, String size){
-		String urlType = null;
-
-		if(size.contains("medium")){
-			urlType = i.getImgURL("medium");
-		} else if(size.contains("thumb")){
-			urlType = i.getImgURL("thumb");
-		} else return false;//TODO: add more later
-
-		return addIssueImg(urlType, i.getID(), size);
-	}
-
-	public static boolean addIssueImg(String urlStr, String id, String size){
+		String urlType = i.getImgURL(size);
 		URL url = null;
 		HttpURLConnection conn = null;
+		String id = i.getID();
+		
 		try {
-			url = new URL(urlStr);
+			url = new URL(urlType);
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestProperty(
 					"User-Agent",
@@ -85,11 +78,31 @@ public class CVImage {
 			File file = new File(dir, name);
 			ImageIO.write(img, "png", file);
 			String col = size.replace("_url", "");
-
-			String str = "UPDATE issue SET "+ col + " ='./Images/issue/" + name +"' WHERE id='" + id + "';";
-
-			System.out.println(str);
-			LocalDB.executeUpdate(str);
+			String db = "jdbc:sqlite:./DigLongBox.db";
+			
+			Connection SQLconn;
+			String str = "UPDATE issue SET "+ col + " = ? WHERE id = ? ";
+			try {
+				
+				SQLconn = DriverManager.getConnection(db);
+				PreparedStatement pre = SQLconn.prepareStatement(str);
+				pre.setString(1, "./images/issue/" + name);
+				pre.setString(2, id);
+				System.out.println(pre.executeUpdate());
+				
+				JSONObject tJO = i.getFullObject();
+				tJO.put(size, "./Images/issue/" + name);
+				str = "UPDATE issue SET JSON = ? WHERE id = ? ";
+				pre = SQLconn.prepareStatement(str);
+				pre.setString(1, tJO.toString());
+				pre.setString(2, id);
+				System.out.println(pre.executeUpdate());
+				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -98,7 +111,11 @@ public class CVImage {
 	}
 
 	public static boolean addVolumeImg(Volume vol, String size){
-
+		//		addVolumeImg(vol.getImgURL(size), vol.getID(), size);
+		//		return true;
+		//	}
+		//	
+		//	public static boolean addVolumeImg(String urlStr, String id, String size){
 		String urlStr = vol.getImgURL(size);
 		URL url = null;
 		HttpURLConnection conn = null;
@@ -137,30 +154,30 @@ public class CVImage {
 		return true;
 	}
 
-	public static boolean setIssueImage(String id, BufferedImage bi, String size){
-		//img = ImageIO.read(ImageIO.createImageInputStream(conn.getInputStream()));
-		String ext = "png";
-		File dir = new File("./images/issue/");
-		String name = String.format("%s.%s", RandomStringUtils.randomAlphanumeric(12), ext);
-		File file = new File(dir, name);
-
-		try {
-			ImageIO.write(bi, "png", file);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		String col = size;
-
-		if(size.contains("_url"))
-			col = size.replace("_url", "");
-
-		String str = "UPDATE issue SET "+ col + " ='./Images/issue/" + name +"' WHERE id='" + id + "';";
-
-		System.out.println(str);
-		return LocalDB.executeUpdate(str);
-	}
+//	public static boolean setIssueImage(String id, BufferedImage bi, String size){
+//		//img = ImageIO.read(ImageIO.createImageInputStream(conn.getInputStream()));
+//		String ext = "png";
+//		File dir = new File("./images/issue/");
+//		String name = String.format("%s.%s", RandomStringUtils.randomAlphanumeric(12), ext);
+//		File file = new File(dir, name);
+//
+//		try {
+//			ImageIO.write(bi, "png", file);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//		String col = size;
+//
+//		if(size.contains("_url"))
+//			col = size.replace("_url", "");
+//
+//		String str = "UPDATE issue SET "+ col + " ='./Images/issue/" + name +"' WHERE id='" + id + "';";
+//
+//		System.out.println(str);
+//		return LocalDB.executeUpdate(str);
+//	}
 
 	public static void printResultSet(ResultSet rs){
 		ResultSetMetaData rsmd;
@@ -217,4 +234,25 @@ public class CVImage {
 		
 	}
 
+//	public static BufferedImage getLocalImage(String id, String size, int type){
+//		String col = size;
+//		String table = (type == 0) ? "issue" : "volume";
+//		if(size.contains("_url"))
+//			col = size.replace("_url", "");
+//
+//		String str = "SELECT " + col + " FROM " + table + " WHERE id = '" + id + "';";
+//		System.out.println(str);
+//		ResultSet rs = LocalDB.executeQuery(str);
+//
+//		try {
+//			rs.next();
+//			String path = rs.getString(col);
+//			//String path = "./Images/volume/YxhTZW1UcU8p.png";
+//			img =  ImageIO.read(new File(path));
+//		} catch (IOException | SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return img;
+//	}
 }

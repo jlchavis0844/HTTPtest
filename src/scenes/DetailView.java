@@ -70,10 +70,16 @@ public class DetailView extends BorderPane{
 		grid.add(new TextField(issue.getPerson("art")), 1, 6);
 		
 		WebView descBox = new WebView();
+		descBox.setMinHeight(50);
+		descBox.setPrefHeight(100);
 		String desc = issue.getDescription();
 		Document doc = Jsoup.parse(desc);
 		doc.select("table").remove();
+		doc.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" +
+					getClass().getResource("../application.css").toExternalForm() + "\" />");
+		doc.select("h4").remove();
 		desc = doc.toString();
+		//descBox.getEngine().setUserStyleSheetLocation(getClass().getResource("../application.css").toExternalForm());
 		descBox.getEngine().loadContent(desc);
 		descBox.setMaxHeight(300);
 		//descBox.setFontScale(0.75);

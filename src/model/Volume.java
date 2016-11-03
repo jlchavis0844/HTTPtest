@@ -22,6 +22,10 @@ public class Volume {
 
 	private boolean full = false;
 
+	// constructor that take in a volume json object
+	// the json object belong to an array of 
+	// volume json object that alex get from calling
+	// CVcrequest
 	public Volume (JSONObject jo){
 		this.vol = jo;
 		if(check(jo, "id")){
@@ -141,7 +145,14 @@ public class Volume {
 	public String getStartYear (){
 		return startYear;
 	}
+	/*
+	public void populate (){
+		full = true;
+	}
 
+	public boolean isFull (){
+		return full;
+	}*/
 
 	// return the private member vol
 	// which is volume json object

@@ -1,0 +1,14 @@
+.button {
+    -fx-background-color: transparent, transparent, transparent, transparent;
+    -fx-alignment: center-left;
+}
+
+.button:hover{
+    -fx-background-color: transparent, rgba(0,0,0,.1), rgba(0,0,0,.1), transparent;
+    -fx-alignment: center-left;
+}
+
+.button:armed {
+    -fx-background-color: transparent, rgba(0,0,0,.1), rgba(0,0,0,.1), rgba(0,0,0,.2);
+    -fx-alignment: center-left;
+}
