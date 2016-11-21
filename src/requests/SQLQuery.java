@@ -26,31 +26,6 @@ import localDB.LocalDB;
  */
 public class SQLQuery {
 
-	public static void test(){
-		JSONArray ja = new JSONArray();
-		JSONObject jo = new JSONObject();
-		jo.put("user", "testUser");
-		jo.put("password","password");
-		ja.put(new JSONObject("{\"id\":\"5855\"}"));
-		ja.put(new JSONObject("{\"id\":\"5856\"}"));
-		ja.put(new JSONObject("{\"id\":\"5857\"}"));
-		ja.put(new JSONObject("{\"id\":\"5858\"}"));
-		jo.put("id_list", ja);
-		//OUT:{"password":"password","id_list":[{"id":"5855"},{"id":"5856"},{"id":"5857"},{"id":"5858"}],"user":"testUser"}
-		try {
-			HttpResponse<JsonNode> response = Unirest.post("http://76.94.123.147:49180/JSONtest.php")
-					.header("accept", "application/json")
-					.header("Content-Type", "application/json")
-					.body(jo)
-					.asJson();
-			System.out.println(response.toString());
-			System.out.println(response.getBody().toString());
-		} catch (UnirestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	/**
 	 * Used to add a user to the login table in the longbox database<br>
 	 * 
@@ -78,16 +53,19 @@ public class SQLQuery {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return "poop";//TODO: change to error message
+		return "Logic error";//TODO: change to error message
 	}
 
 	/**
 	 * gets the ID's added after a certain date, returns in a JSONObect
 	 * @param user String of the User
 	 * @param pass String of the password
-	 * @param timeStamp String of the after date "YYYY-MM-DD hr:mn:sc"
+	 * @param timeStamp String of the AFTER date "YYYY-MM-DD hr:mn:sc"
 	 * @return JSONObject with the following form:
-	 * {"id_list":["1234","5678","91011"]}
+	 * {"id_list":["1234","5678","91011"]}<br>
+	 * If I want to get all issues added after 2016-11-02 10:28:00...<br>
+	 * {"password" : "password", "user" : "testUser","timeStamp" : "2016-11-2 10:25:00"}<br>
+	 * getIDs("testUser", "password", "2016-11-2 10:25:00");
 	 */
 	public static JSONObject getIDs(String user, String pass, String timeStamp){
 		JSONObject jo = new JSONObject();
@@ -146,18 +124,41 @@ public class SQLQuery {
 		return retVal;
 	}
 
+	public static boolean login(String user, String pass){
+		boolean retVal = false;
+		JSONObject jo = new JSONObject();
+		jo.put("user", user);
+		jo.put("password", pass);
+
+		try {
+			HttpResponse<String> response = Unirest.post("http://76.94.123.147:49180/LBlogin.php")
+					.header("content-type", "application/json")
+					.header("cache-control", "no-cache")
+					.body(jo).asString();
+			System.out.println(response.getBody());
+			retVal = Boolean.valueOf(response.getBody());
+		} catch (UnirestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return retVal;
+	}
+
 	public static String[] getLoginInfo(){
-		String info[] = new String[3];
+		String info[] = new String[4];
 
 		String SQLinfo = "SELECT * FROM login";
 		ResultSet rs = LocalDB.executeQuery(SQLinfo);
 
 		try {
 			rs.next();
-			info[0] = rs.getString("userName");
-			info[1] = rs.getString("password");
-			info[2] = rs.getString("profile");
-
+			if(!rs.isClosed()){
+				info[0] = rs.getString("user");
+				info[1] = rs.getString("password");
+				info[2] = rs.getString("timestamp");
+				info[3] = rs.getString("auto");
+				rs.close();
+			}
 			for(String s: info){
 				System.out.print(s + "\t");
 			}
@@ -168,5 +169,37 @@ public class SQLQuery {
 			e.printStackTrace();
 		}
 		return info;
+	}
+
+	public static boolean setLoginInfo(String info[]){
+		String query = "SELECT COUNT (*) FROM login WHERE user='" + info[0] + "';";
+		ResultSet rs = LocalDB.executeQuery(query);
+		int count = -1;
+
+		try {
+			rs.next();
+			count = rs.getInt(1);
+			rs.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if(count == 0){
+			query = "INSERT INTO login (`user`, `password`, `timestamp`, `auto`) VALUES (" +
+					"'" + info[0] + "', " + "'" + info[1] + "', " + "'" + info[2] + "', " +
+					"'" + info[3] + "'); ";
+		} else {
+			query = "UPDATE login SET `password` = '" + info[1] + "', `timestamp` = '" + info[2] + 
+					"', `auto` = '" + info[3] + "' WHERE `user` = '" + info[0] + "';";
+		}
+		return LocalDB.executeUpdate(query);
+	}
+
+	public static boolean updateLoginInfo(String uName, String ts, String al){
+		String query = "UPDATE login SET `timestamp` = '" + ts + "', `auto` = '" + al +
+				"' WHERE `user` = '" + uName + "';";
+		return LocalDB.executeUpdate(query);
+
 	}
 }

@@ -27,7 +27,7 @@ public class IssueResult extends VBox {
 		
 		text = new Label();
 		text.setWrapText(true);
-		String info = "Issue# " + issue.getIssueNum()+ "\tDate: "  + issue.getCoverDate() + "\n" + issue.getName();
+		String info = "Issue# " + issue.getIssueNum()+ " \tDate: "  + issue.getCoverDate() + "\n" + issue.getName();
 		Document doc = Jsoup.parse(issue.getDescription());
 		Elements element = doc.select("table").remove();
 		

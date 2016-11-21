@@ -2,38 +2,26 @@ package application;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.json.simple.JSONObject;
-
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.stage.Stage;
 import localDB.LocalDB;
 import model.Issue;
 import model.Volume;
-import requests.CVImage;
-import requests.CVrequest;
-import requests.CVrequestAsync;
-import requests.MarvelRequest;
-import requests.SQLQuery;
 import scenes.AddComic;
 import scenes.DetailView;
 import scenes.IssueLoadScreen;
 import scenes.IssuePreview;
-import scenes.IssueResult;
-import scenes.VolResult;
+import scenes.LogIn;
 import scenes.VolumePreview;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -56,8 +44,12 @@ public class Main extends Application {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		scenes.LogIn login = new LogIn();
+		
 		window = primaryStage;
 		window.setTitle("Digital Long Box");
+		//window.initStyle(StageStyle.TRANSPARENT);
+		
 		layout = new BorderPane();
 
 		added = new ArrayList<Issue>();
@@ -132,14 +124,16 @@ public class Main extends Application {
 			new AddComic(added);
 			updateLeft();
 		});
-
+		window.setMaximized(true);
 		Scene scene = new Scene(layout, 1900, 1050);
 		System.out.println("applying " + getClass().getResource("../application.css").toExternalForm());
 		String style= getClass().getResource("../application.css").toExternalForm();
 		scene.getStylesheets().add(style);
 		window.setScene(scene);
 		window.show();
-		System.out.println("Done loading after " + (System.currentTimeMillis() - start));
+		
+		System.out.println("Done loading after " + (System.currentTimeMillis() - start) + 
+				", starting background loading");
 		backgroundLoadVols();
 	}
 
@@ -156,7 +150,6 @@ public class Main extends Application {
 		//System.out.println("to adjust");
 		//SQLQuery.getLoginInfo();
 
-		System.exit(0);
 	}
 
 	public static void updateLeft(){
@@ -174,6 +167,7 @@ public class Main extends Application {
 		root.setExpanded(true);
 		for(VolumePreview vp: volPreviews){
 			//vp.update(allIssues);
+			
 			TreeItem temp = new VolumeCell(vp);
 			root.getChildren().add(temp);
 		}
@@ -207,7 +201,8 @@ public class Main extends Application {
 		for(Object obj : treeView.getRoot().getChildren()){
 			executorService.execute(new Runnable() {
 				public void run(){
-					System.out.println(counter.incrementAndGet() + " ?= " + volNum);
+					counter.incrementAndGet();
+					//System.out.println(counter.incrementAndGet() + " ?= " + volNum);
 					((VolumePreview)((VolumeCell) obj).getValue()).setImage();
 					System.out.println("done loading " + ((VolumePreview)((VolumeCell) obj).getValue()).getVolName());
 				}

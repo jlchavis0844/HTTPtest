@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +24,68 @@ import model.Issue;
 import model.Volume;
 import requests.CVImage;
 import requests.CVrequest;
+
+/**
+ * Operator Description Example = Checks if the values of two operands are equal
+ * or not, if yes then condition becomes true. (a = b) is not true. != Checks if
+ * the values of two operands are equal or not, if values are not equal then
+ * condition becomes true. (a != b) is true. <> Checks if the values of two
+ * operands are equal or not, if values are not equal then condition becomes
+ * true. (a <> b) is true. > Checks if the value of left operand is greater than
+ * the value of right operand, if yes then condition becomes true. (a > b) is
+ * not true. < Checks if the value of left operand is less than the value of
+ * right operand, if yes then condition becomes true. (a < b) is true. >= Checks
+ * if the value of left operand is greater than or equal to the value of right
+ * operand, if yes then condition becomes true. (a >= b) is not true. <= Checks
+ * if the value of left operand is less than or equal to the value of right
+ * operand, if yes then condition becomes true. (a <= b) is true. !< Checks if
+ * the value of left operand is not less than the value of right operand, if yes
+ * then condition becomes true. (a !< b) is false. !> Checks if the value of
+ * left operand is not greater than the value of right operand, if yes then
+ * condition becomes true. (a !> b) is true.
+ * 
+ * Operator Description ALL The ALL operator is used to compare a value to all
+ * values in another value set. AND The AND operator allows the existence of
+ * multiple conditions in an SQL statement's WHERE clause. ANY The ANY operator
+ * is used to compare a value to any applicable value in the list according to
+ * the condition. BETWEEN The BETWEEN operator is used to search for values that
+ * are within a set of values, given the minimum value and the maximum value.
+ * EXISTS The EXISTS operator is used to search for the presence of a row in a
+ * specified table that meets certain criteria. IN The IN operator is used to
+ * compare a value to a list of literal values that have been specified. LIKE
+ * The LIKE operator is used to compare a value to similar values using wildcard
+ * operators. NOT The NOT operator reverses the meaning of the logical operator
+ * with which it is used. Eg: NOT EXISTS, NOT BETWEEN, NOT IN, etc. This is a
+ * negate operator. OR The OR operator is used to combine multiple conditions in
+ * an SQL statement's WHERE clause. IS NULL The NULL operator is used to compare
+ * a value with a NULL value. UNIQUE The UNIQUE operator searches every row of a
+ * specified table for uniqueness (no duplicates).
+ */
+
+interface Operator {
+
+	String EQUAL = "=";
+	String NOT_EQUAL = "!=";
+	String GREATER_THAN = ">";
+	String LESS_THAN = "<";
+	String LESS_THAN_OR_EQUAL = "<=";
+	String GREATER_THAN_OR_EQUAL = ">=";
+	String NOT_LESS_THAN = "!<";
+	String NOT_GREATER_THAN = "!>";
+	String BETWEEN = "<>";
+
+	String WORD_ALL = "ALL";
+	String WORD_AND = "AND";
+	String WORD_BETWEEN = "BETWEEN";
+	String WORD_EXIT = "EXIST";
+	String WORD_IN = "IN";
+	String WORD_LIKE = "LIKE";
+	String WORD_NOT = "NOT";
+	String WORD_OR = "OR";
+	String WORD_IS_NULL = "IS NULL";
+	String WORD_UNIQUE = "UNIQUE";
+
+}
 
 public class LocalDB {
 
@@ -35,21 +99,17 @@ public class LocalDB {
 		try {
 			conn = DriverManager.getConnection(url);
 			stat = conn.createStatement();
-			
-			
-			//stat.executeUpdate("DELETE FROM issue;");
-			//stat.executeUpdate("VACUUM");
+
 			String id = issue.getID();
 			JSONObject jo = issue.getFullObject();
 			Date date = new Date();
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
 			String formattedDate = sdf.format(date);
-			
+
 			jo.put("timeStamp", formattedDate);
 			jo.put("volName", jo.getJSONObject("volume").getString("name"));
 			jo.put("JSON", jo.toString());
-			
-			//stat.executeUpdate("INSERT INTO issue (id) VALUES ('" + id + "');");
+
 			String[] names = JSONObject.getNames(jo);
 			String qNames = "INSERT INTO issue (";
 			String qVals = "VALUES (";
@@ -59,7 +119,7 @@ public class LocalDB {
 			ArrayList<String> goodValues = new ArrayList<>();
 			String value = "";
 			String currName = "";
-			
+
 			for(int i = 0; i < nameNum; i++){
 				currName = names[i];
 				if(!jo.isNull(currName) && !currName.equals("image")){
@@ -81,15 +141,15 @@ public class LocalDB {
 					qVals += (" ? );");
 				}
 			}
-			
+
 			String sql = qNames+ qVals;
 			System.out.println(sql);
 			PreparedStatement pre = conn.prepareStatement(sql); 
-			
+
 			for(int i = 0; i < nameNum; i++){
 				pre.setString((i+1), goodValues.get(i));
 			}
-			
+
 			pre.executeUpdate();
 
 			CVImage.addIssueImg(issue, "medium");
@@ -116,11 +176,11 @@ public class LocalDB {
 		}
 		return true;
 	}
-	
+
 	public static boolean addVolume(Volume vol){
 		if(exists(vol.getID(), VOLUME))
 			return false;
-		
+
 		try {
 			conn = DriverManager.getConnection(url);
 			stat = conn.createStatement();
@@ -131,7 +191,7 @@ public class LocalDB {
 			Date date = new Date();
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
 			String formattedDate = sdf.format(date);
-			
+
 			jo.put("JSON", jo.toString());
 			jo.put("timeStamp", formattedDate);
 
@@ -145,7 +205,7 @@ public class LocalDB {
 			ArrayList<String> goodValues = new ArrayList<>();
 			String value = "";
 			String currName = "";
-			
+
 			for(int i = 0; i < nameNum; i++){
 				currName = names[i];
 				if(!jo.isNull(currName) && !currName.equals("image")){
@@ -167,20 +227,20 @@ public class LocalDB {
 					qVals += (" ? );");
 				}
 			}
-			
+
 			String sql = qNames+ qVals;
 			System.out.println(sql);
 			PreparedStatement pre = conn.prepareStatement(sql); 
-			
+
 			for(int i = 0; i < nameNum; i++){
 				pre.setString((i+1), goodValues.get(i));
 			}
-			
+
 			pre.executeUpdate();
-			
+
 			CVImage.addVolumeImg(vol, "medium");
 			CVImage.addVolumeImg(vol, "thumb");
-		
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -212,7 +272,7 @@ public class LocalDB {
 			ResultSet rs = stat.executeQuery(sql);
 			rs.next();
 			//System.out.println(rs.getString(1));
-			
+
 			if(rs.isClosed()){
 				System.out.println("not found");
 				return false;
@@ -251,7 +311,7 @@ public class LocalDB {
 				return false;
 			conn = DriverManager.getConnection(url);
 			Statement stat = conn.createStatement();
-			
+
 			String sql = "UPDATE issue SET " + field + " = ? WHERE id = ?";
 			PreparedStatement pre = conn.prepareStatement(sql);
 			pre.setString(1, value);
@@ -270,27 +330,21 @@ public class LocalDB {
 	}
 
 	public static boolean executeUpdate(String str){
+		Connection newconn = null;
+		Statement newstat = null;
 		try {
-			conn = DriverManager.getConnection(url);
-			Statement stat = conn.createStatement();
-			System.out.println(stat.executeUpdate(str));
+			newconn = DriverManager.getConnection(url);
+			newstat = newconn.createStatement();
+			int updated = newstat.executeUpdate(str);
+			//newconn.close();
+			if(updated != 1){
+				System.out.println("SQL insert failed");
+			}
+			//System.out.println(stat.executeUpdate(str));
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				if(conn.isClosed() == false){
-					conn.close();
-				}
-				if(stat.isClosed() == false){
-					stat.close();
-				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
-
-		}
+		} 
 		return true;
 	}
 
@@ -303,20 +357,8 @@ public class LocalDB {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}finally {
-//			try {
-//				if(conn.isClosed() == false){
-//					conn.close();
-//				}
-////				if(stat.isClosed() == false){
-////					stat.close();
-////				}
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}	
-
 		}
+
 		return rs;
 	}
 
@@ -324,12 +366,7 @@ public class LocalDB {
 		try {
 			conn = DriverManager.getConnection(url);
 			Statement stat = conn.createStatement();
-			/*stat.executeUpdate("DELETE FROM issue;");
-			stat.executeUpdate("VACUUM");
-			stat.executeUpdate("INSERT INTO issue (id) VALUES ('" + 552139 + "');");*/
 			String value = CVrequest.getIssue("552139").get("location_credits").toString();
-			//value = org.json.simple.JSONObject.escape(value);
-			//String sql = "UPDATE issue SET location_credits ='" + value + "' WHERE id='552139';";
 			PreparedStatement pre = conn.prepareStatement("UPDATE issue SET location_credits = ? WHERE id='552139'");
 			pre.setString(1, value);
 			pre.executeUpdate();
@@ -425,32 +462,7 @@ public class LocalDB {
 		}
 		return true;
 	}
-	
-	
-//	public static Issue getIssue(String id){
-//		Issue issue = null;
-//		try {
-//			conn = DriverManager.getConnection(url);
-//			stat = conn.createStatement();
-//			
-//			String query  = "SELECT JSON FROM issue WHERE id = ?;";
-//			PreparedStatement pre = conn.prepareStatement(query);
-//			pre.setString(1, id);
-//			ResultSet rs = pre.executeQuery();
-//			rs.next();
-//			String jsonStr = rs.getString(1);
-//			
-//			if(!jsonStr.equals("") || jsonStr != null){
-//				issue = new Issue(new JSONObject(jsonStr));
-//			}
-//			
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return issue;	
-//		
-//	}
+
 
 	/**
 	 * Returns the value of the requested field from the reqested table for the ID passed
@@ -463,7 +475,7 @@ public class LocalDB {
 		try {
 			conn = DriverManager.getConnection(url);
 			stat = conn.createStatement();
-			
+
 			String query  = "SELECT " + key + " FROM ? WHERE id = ?;";
 			String table = (type == 0) ? "issue" : "volume";
 			PreparedStatement pre = conn.prepareStatement(query);
@@ -478,53 +490,19 @@ public class LocalDB {
 		}
 		return null;		
 	}
-	
-//	public static JSONObject getLocalIssue(String id){
-//		
-//		try {
-//			conn = DriverManager.getConnection(url);
-//			stat = conn.createStatement();
-//			
-//			String sql = "SELECT * FROM issue WHERE id = ?";
-//			PreparedStatement pre = conn.prepareStatement(sql);
-//			pre.setString(1, id);
-//			
-//			ResultSet rs = pre.executeQuery();
-//			ResultSetMetaData meta = rs.getMetaData();
-//			List<List<String>> rowList = new LinkedList<List<String>>();
-//			Object val = "";
-//			
-//			while(rs.next()){
-//				List<String> colList = new LinkedList<String>();
-//				rowList.add(colList);
-//				int size = meta.getColumnCount();
-//				
-//				for(int col = 1; col <=  size; col++){
-//					val = rs.getObject(col);
-//					colList.add(val.toString());
-//				}
-//			}
-//			
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return null;
-//	}
-//	
-//	
+
 	public static ArrayList<Issue> getAllIssues(){
 		ArrayList<Issue> iList = new ArrayList<Issue>();
 		try {
 			conn = DriverManager.getConnection(url);
 			stat = conn.createStatement();
-			
+
 			String sql = "SELECT JSON FROM issue;";
 			PreparedStatement pre = conn.prepareStatement(sql);
-			
+
 			ResultSet rs = pre.executeQuery();
 			ResultSetMetaData meta = rs.getMetaData();
-			
+
 			String val = "";
 			JSONObject tObj = null;
 			Issue tIssue = null;
@@ -533,32 +511,32 @@ public class LocalDB {
 				val = rs.getString(1);	
 				tObj = new JSONObject(val);
 				tIssue = new Issue(tObj);
-				System.out.println("fetching " + tIssue.getVolumeName() + " # " + tIssue.getIssueNum());
+				//System.out.println("fetching " + tIssue.getVolumeName() + " # " + tIssue.getIssueNum());
 				iList.add(tIssue);
 			}
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		if(iList.size() == 0)
 			return null;
 		return iList;
 	}
-	
+
 	public static ArrayList<Volume> getAllVolumes(){
 		ArrayList<Volume> iList = new ArrayList<Volume>();
 		try {
 			conn = DriverManager.getConnection(url);
 			stat = conn.createStatement();
-			
+
 			String sql = "SELECT JSON FROM volume;";
 			PreparedStatement pre = conn.prepareStatement(sql);
-			
+
 			ResultSet rs = pre.executeQuery();
 			ResultSetMetaData meta = rs.getMetaData();
-			
+
 			String val = "";
 			JSONObject tObj = null;
 			Volume vol = null;
@@ -567,19 +545,39 @@ public class LocalDB {
 				val = rs.getString(1);	
 				tObj = new JSONObject(val);
 				vol = new Volume(tObj);
-				System.out.println("fetching " + vol.getName());
+				//System.out.println("fetching " + vol.getName());
 				iList.add(vol);
 			}
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		if(iList.size() == 0)
 			return null;
 		return iList;
 	}
+	
+	public static void sortVolumes(List<Volume> volList){
+
+		final Comparator<Volume> comparatorVolume = new Comparator<Volume>() {
+			
+			public int compare(Volume v1, Volume v2) {
+				String name1 = v1.getName().replace("The", "");
+				String name2 = v2.getName().replace("The", "");
+				int result = name1.compareTo(name2);
+				
+				if(result == 0){
+					return v1.getStartYear().compareTo(v2.getStartYear());
+				}else return result;
+			}
+		};
+
+		Collections.sort(volList, comparatorVolume);
+	}
+	
+	
 }
 
 

@@ -17,6 +17,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import localDB.LocalDB;
 import model.Issue;
 import requests.CVImage;
 
@@ -42,6 +43,7 @@ public class DetailView extends BorderPane{
 		TextField cDate = new TextField(issue.getCoverDate());
 		TextField volName = new TextField(issue.getVolumeName());
 		TextField writer = new TextField(issue.getPerson("writer"));
+		writer.setEditable(false);
 		//center.getChildren().addAll(volName,issueNum,name,cDate, writer);
 
 		this.setPadding(new Insets(10));
@@ -84,7 +86,7 @@ public class DetailView extends BorderPane{
 		descBox.setMaxHeight(300);
 		//descBox.setFontScale(0.75);
 		
-		BufferedImage bi = issue.getLocalImg("medium");
+		BufferedImage bi = issue.getImage("medium");
 		Image image = SwingFXUtils.toFXImage(bi, null);
 		ImageView imageView = new ImageView(image);
 		

@@ -1,7 +1,7 @@
 <?php
 /**
 This PHP will return a jason with the field id_list that has an array of off id's
-of id's of comics that were entered before the passed timeStamp;
+of id's of comics that were entered AFTER the passed timeStamp;
 
 json body should contain the following:
 {
@@ -82,7 +82,7 @@ if ($stmt = $con->prepare ( $query )) {
 $arr = array();//make a temporary array to hold id's
 
 //build a query to get the id's to sync
-$query = "SELECT `id` FROM `longbox`.`issues` WHERE `userName` = '$lbUser' AND `timestamp` < '$lbTime';";
+$query = "SELECT `id` FROM `longbox`.`issues` WHERE `userName` = '$lbUser' AND `timestamp` > '$lbTime';";
 
 //store the results
 $results = mysqli_query($con, $query);

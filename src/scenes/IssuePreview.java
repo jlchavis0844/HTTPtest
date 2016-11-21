@@ -23,8 +23,8 @@ public class IssuePreview extends HBox{
 		bi = issue.getLocalImg("thumb");
 		Image image = SwingFXUtils.toFXImage(bi, null);
 		thumb = new ImageView(image);
-		System.out.println("Image fetch for " + issue.getVolumeName() + " #" + issue.getIssueNum()
-							+ " took :" + (System.currentTimeMillis() - start));
+		/*System.out.println("Image fetch for " + issue.getVolumeName() + " #" + issue.getIssueNum()
+							+ " took :" + (System.currentTimeMillis() - start));*/
 		thumb.setFitHeight(50);
 		thumb.setFitWidth(33);
 		

@@ -161,5 +161,31 @@
 			//			}
 **********************************************************
 
+//	public static boolean setIssueImage(String id, BufferedImage bi, String size){
+//		//img = ImageIO.read(ImageIO.createImageInputStream(conn.getInputStream()));
+//		String ext = "png";
+//		File dir = new File("./images/issue/");
+//		String name = String.format("%s.%s", RandomStringUtils.randomAlphanumeric(12), ext);
+//		File file = new File(dir, name);
+//
+//		try {
+//			ImageIO.write(bi, "png", file);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//		String col = size;
+//
+//		if(size.contains("_url"))
+//			col = size.replace("_url", "");
+//
+//		String str = "UPDATE issue SET "+ col + " ='./Images/issue/" + name +"' WHERE id='" + id + "';";
+//
+//		System.out.println(str);
+//		return LocalDB.executeUpdate(str);
+//	}
+*****************************************************************************
+
 
 	
