@@ -1,6 +1,5 @@
 package requests;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;

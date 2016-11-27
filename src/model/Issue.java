@@ -6,7 +6,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import localDB.LocalDB;
 import requests.*;
 
 public class Issue {

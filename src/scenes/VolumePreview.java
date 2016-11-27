@@ -1,7 +1,7 @@
 package scenes;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.List;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
@@ -19,9 +19,9 @@ public class VolumePreview extends HBox{
 	/**
 	 * Makes a preview of a volume, to load the image, us setImage()
 	 * @param rhVol
-	 * @param issues
+	 * @param allIssues
 	 */
-	public VolumePreview(Volume rhVol, ArrayList<Issue> issues) {
+	public VolumePreview(Volume rhVol, List<Issue> allIssues) {
 		super();
 
 		vol = rhVol;
@@ -35,7 +35,7 @@ public class VolumePreview extends HBox{
 		thumb.setFitWidth(33);
 
 		int counter = 0;
-		for(Issue i : issues){
+		for(Issue i : allIssues){
 			if(i.getVolumeID().equals(vol.getID())){
 				counter++;
 			}
@@ -52,9 +52,9 @@ public class VolumePreview extends HBox{
 		return vol.getName();
 	}
 
-	public void update(ArrayList<Issue> issues){
+	public void update(List<Issue> allIssues){
 		int counter = 0;
-		for(Issue i : issues){
+		for(Issue i : allIssues){
 			if(i.getVolumeID().equals(vol.getID())){
 				counter++;
 			}

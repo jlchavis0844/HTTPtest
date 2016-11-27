@@ -1,8 +1,9 @@
 package requests;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Vector;
-
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -12,6 +13,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 import localDB.LocalDB;
+import model.Issue;
 /**
  * This class if meant to be a static class used to make calls to PHP scripts that make the SQL calls<br>
  * There will be 4 main types of commands:<br>
@@ -61,31 +63,67 @@ public class SQLQuery {
 	 * @param user String of the User
 	 * @param pass String of the password
 	 * @param timeStamp String of the AFTER date "YYYY-MM-DD hr:mn:sc"
-	 * @return JSONObject with the following form:
-	 * {"id_list":["1234","5678","91011"]}<br>
-	 * If I want to get all issues added after 2016-11-02 10:28:00...<br>
-	 * {"password" : "password", "user" : "testUser","timeStamp" : "2016-11-2 10:25:00"}<br>
-	 * getIDs("testUser", "password", "2016-11-2 10:25:00");
+	 * @return ArrayList<String> of the id's in string format
 	 */
-	public static JSONObject getIDs(String user, String pass, String timeStamp){
+	public static ArrayList<String> getIDs(String user, String pass, String timeStamp){
 		JSONObject jo = new JSONObject();
 		jo.put("user", user);
 		jo.put("password", pass);
 		jo.put("timeStamp", timeStamp);
 
+		ArrayList<String> retVals = new ArrayList<>();
 		try {
 			HttpResponse<JsonNode> response = Unirest.post("http://76.94.123.147:49180/LBgetID.php")
 					.header("accept", "application/json")
 					.header("Content-Type", "application/json")
 					.body(jo)
 					.asJson();
-			return response.getBody().getObject();
+			JSONArray ja = response.getBody().getObject().getJSONArray("id_list");
+			
+			for(int i = 0; i < ja.length(); i++){
+				retVals.add(ja.getString(i));
+			}
+			
 		} catch (UnirestException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		return retVals;
 	}
+	
+	/**
+	 * gets the ID's deleted after a certain date, returns ArrayList of id's in string
+	 * @param user String of the User
+	 * @param pass String of the password
+	 * @param timeStamp String of the AFTER date "YYYY-MM-DD hr:mn:sc"
+	 * @return ArrayList<String> of the id's in a string format
+	 */
+	public static ArrayList<String> getDeletedIDs(String user, String pass, String timeStamp){
+		JSONObject jo = new JSONObject();
+		jo.put("user", user);
+		jo.put("password", pass);
+		jo.put("timeStamp", timeStamp);
+
+		ArrayList<String> retVals = new ArrayList<>();
+		try {
+			HttpResponse<JsonNode> response = Unirest.post("http://76.94.123.147:49180/LBgetDeletedID.php")
+					.header("accept", "application/json")
+					.header("Content-Type", "application/json")
+					.body(jo)
+					.asJson();
+			JSONArray ja = response.getBody().getObject().getJSONArray("id_list");
+			
+			for(int i = 0; i < ja.length(); i++){
+				retVals.add(ja.getString(i));
+			}
+			
+		} catch (UnirestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return retVals;
+	}
+
 
 	/**
 	 * Writes newly owned IDs to issues table with the given info
@@ -200,6 +238,65 @@ public class SQLQuery {
 		String query = "UPDATE login SET `timestamp` = '" + ts + "', `auto` = '" + al +
 				"' WHERE `user` = '" + uName + "';";
 		return LocalDB.executeUpdate(query);
+	}
 
+	public static boolean removeIssue(String[] id){
+		Boolean result = false;
+
+		for(String currID: id){
+			if(!LocalDB.deleteIssueByID(currID)){
+				System.out.println("failed to find local issue with id: " + currID);
+			};
+		}
+
+		String info[] = getLoginInfo();
+
+		try {
+			boolean retVal = false;
+			JSONObject jo = new JSONObject();
+			jo.put("user", info[0]);
+			jo.put("password", info[1]);
+			for(String currID: id){
+				jo.put("issues", id);
+			}
+
+			HttpResponse<String> response = Unirest.post("http://jchavis.hopto.org:49180/LBremove.php")
+					.header("content-type", "application/json")
+					.header("cache-control", "no-cache")
+					.body(jo).asString();
+			System.out.println(response.getBody());
+			retVal = Integer.valueOf(response.getBody()) == id.length;
+			if(retVal == false)
+				System.out.println("Failed to delete all issues, remote removed: " + response.getBody());
+		} catch (UnirestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public static String getCurrentTimeStamp() {
+		java.util.Date date = new java.util.Date();
+		Timestamp ts = new Timestamp(date.getTime());
+		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(ts);
+		return timeStamp;
+	}
+	
+	public static void fullSync(){
+		String info[] = getLoginInfo();
+		ArrayList<String> newRemote = getIDs(info[0], info[1], info[2]);
+		for(String s: newRemote){
+			if(!LocalDB.exists(s, LocalDB.ISSUE)){
+				LocalDB.addIssue(new Issue(CVrequest.getIssue(s)));
+			}
+		}
+		
+		ArrayList<String> deletedIDs = getDeletedIDs(info[0], info[1], info[2]);
+		for(String s: deletedIDs){
+			if(LocalDB.exists(s, LocalDB.ISSUE));
+		}
+		
+		sendIDs(info[0], info[1], LocalDB.getAllIDs());
+		SQLQuery.updateLoginInfo(info[0], getCurrentTimeStamp(), info[3]);
 	}
 }

@@ -7,7 +7,6 @@ import org.jsoup.nodes.Document;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -15,14 +14,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import localDB.LocalDB;
 import model.Issue;
-import requests.CVImage;
 
 public class DetailView extends BorderPane{
-
+	private Button editButton;
 	public DetailView(Issue issue) {
 		super();
 		
@@ -99,6 +96,14 @@ public class DetailView extends BorderPane{
 		//setCenter(center);
 		setRight(imageView);	
 		
+		editButton = new Button("Save Changes");
+		editButton.setVisible(true);
+		editButton.setOnAction(e -> {
+			LocalDB.update(issue.getID(), "name", name.getSelectedText().toString(), 0);
+			LocalDB.update(issue.getID(), "issue_number", issueNum.getSelectedText().toString(), 0);
+			LocalDB.update(issue.getID(), "cover_date", cDate.getSelectedText().toString(), 0);
+			LocalDB.update(issue.getID(), "volume", volName.getSelectedText().toString(), 0);
+		});
+		grid.add(editButton, 0, 7);
 	}
-
 }

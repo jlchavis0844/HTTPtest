@@ -1,12 +1,9 @@
 package scenes;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.json.JSONObject;
 
 import javafx.application.Platform;
@@ -38,7 +35,7 @@ public class LogIn {
 
 	public LogIn() throws IOException {
 		Stage stage = new Stage();
-		timeStamp = GetCurrentTimeStamp();
+		timeStamp = getCurrentTimeStamp();
 
 		stage.setTitle("Welcome | Login or Sign Up");
 		BorderPane bp = new BorderPane();
@@ -68,13 +65,13 @@ public class LogIn {
 		loginButton.setOnAction(e ->{
 			info[0] = usernameTextField.getText();
 			info[1] = passwordTextField.getText();
-			info[2] = GetCurrentTimeStamp();
+			info[2] = getCurrentTimeStamp();
 			info[3] = String.valueOf(cb.isSelected());
 			System.out.println("Sending login info... " + arrString(info));
 			boolean temp = SQLQuery.login(info[0], info[1]);
 			if(temp){
 				SQLQuery.setLoginInfo(info);
-				sync();
+				SQLQuery.fullSync();
 				stage.close();
 			} else {
 				incorrect.setText("Login failed");
@@ -127,6 +124,7 @@ public class LogIn {
 			stage.showAndWait();
 		} else if(!newUser && cb.isSelected()){
 			loggedIn = SQLQuery.login(info[0], info[1]);
+			SQLQuery.fullSync();
 			if(!loggedIn) {
 				AlertBox.display("Unable to log in", 
 						"Logging in has failed, check information and try again");
@@ -141,7 +139,7 @@ public class LogIn {
 //				loginButton.setVisible(false);
 			}
 		} else {
-			sync();
+			SQLQuery.fullSync();
 		}
 	}
 
@@ -171,7 +169,7 @@ public class LogIn {
 			return false;
 		} else reged = true;
 
-		String[] info = {user, pass, GetCurrentTimeStamp(), String.valueOf(cb.isSelected())};
+		String[] info = {user, pass, getCurrentTimeStamp(), String.valueOf(cb.isSelected())};
 		reged = SQLQuery.setLoginInfo(info);
 
 
@@ -184,15 +182,11 @@ public class LogIn {
 		return reged;
 	}
 
-	public String GetCurrentTimeStamp() {
+	public String getCurrentTimeStamp() {
 		java.util.Date date = new java.util.Date();
 		Timestamp ts = new Timestamp(date.getTime());
-		String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(ts);
+		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(ts);
 		return timeStamp;
-	}
-
-	public boolean sync(){
-		return false;
 	}
 	
 	public static String arrString(String[] arr){

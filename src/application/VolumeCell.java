@@ -9,7 +9,6 @@ import javafx.scene.control.TreeItem;
 import model.Issue;
 import scenes.IssuePreview;
 import scenes.VolumePreview;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
@@ -44,17 +43,18 @@ public class VolumeCell extends TreeItem {
 	 * @param allIssues
 	 *            - ArrayList of all the issues
 	 */
-	public void setIssues(ArrayList<Issue> allIssues) {
+	public synchronized void setIssues(ArrayList<Issue> allIssues) {
 		for (Issue i : allIssues) {
 			if (i.getVolumeID().equals(vp.getVolume().getID())) {
-				// System.out.println("Adding " + i);
-				// Had to insert this inorder to prevent multiple threads
-				// writing to children
-				Platform.runLater(new Runnable() {
-					public void run() {
-						getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
-					}
-				});
+//				// System.out.println("Adding " + i);
+//				// Had to insert this inorder to prevent multiple threads
+//				// writing to children
+//				Platform.runLater(new Runnable() {
+//					public void run() {
+//						getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
+//					}
+//				});
+				getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
 			}
 		}
 		filled = true;

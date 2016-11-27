@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONObject;
 
-import localDB.LocalDB;
 import requests.CVImage;
 import requests.CVrequest;
 
