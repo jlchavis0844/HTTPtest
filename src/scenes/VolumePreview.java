@@ -1,12 +1,19 @@
 package scenes;
 
+
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.HBox;
 import model.Issue;
 import model.Volume;
@@ -65,6 +72,32 @@ public class VolumePreview extends HBox{
 			getChildren().clear();
 			getChildren().addAll(thumb, infoLbl);
 		}
+		
+		ContextMenu contextMenu = new ContextMenu();
+		MenuItem item1 = new MenuItem("delete");
+		item1.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				// localDB.remove
+				// we need to add remove into localdb
+				// how to updateleft in this class???
+				// updateleft in the main use added list
+				// we got problem here so for now don't update
+				infoLbl.setText("DELETE TEST ON CONTEXT MENU");
+			}
+		});
+		// Add MenuItem to ContextMenu
+		contextMenu.getItems().addAll(item1);
+		// When user right-click issue preview
+		setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+
+			@Override
+			public void handle(ContextMenuEvent event) {
+
+				contextMenu.show(infoLbl, event.getScreenX(), event.getScreenY());
+			}
+		});
 
 	}
 

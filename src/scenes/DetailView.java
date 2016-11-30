@@ -68,6 +68,12 @@ public class DetailView extends BorderPane{
 		grid.add(new Label("artist"), 0, 6);
 		grid.add(new TextField(issue.getPerson("art")), 1, 6);
 		
+		Label arcLbl = new Label("Story Arc");
+		TextField arcName = new TextField(issue.getArcName());
+		
+		grid.add(arcLbl, 0, 7);
+		grid.add(arcName, 1, 7);
+		
 		WebView descBox = new WebView();
 		descBox.setMinHeight(50);
 		descBox.setPrefHeight(100);
@@ -104,6 +110,6 @@ public class DetailView extends BorderPane{
 			LocalDB.update(issue.getID(), "cover_date", cDate.getSelectedText().toString(), 0);
 			LocalDB.update(issue.getID(), "volume", volName.getSelectedText().toString(), 0);
 		});
-		grid.add(editButton, 0, 7);
+		grid.add(editButton, 0, 8);
 	}
 }

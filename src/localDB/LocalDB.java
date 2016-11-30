@@ -161,9 +161,9 @@ public class LocalDB {
 				if (conn.isClosed() == false) {
 					conn.close();
 				}
-				//if (stat.isClosed() == false) {
-					//stat.close();
-				//}
+				// if (stat.isClosed() == false) {
+				// stat.close();
+				// }
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -503,11 +503,11 @@ public class LocalDB {
 		Collections.sort(input, comparatorIssue);
 	}
 
-	public static void sortIssuesByIssueID(ArrayList<Issue> input, boolean order) throws JSONException {
+	public static void sortIssuesByIssueNum(ArrayList<Issue> input, boolean order) throws JSONException {
 		final Comparator<Issue> comparatorIssue = new Comparator<Issue>() {
 			public int compare(Issue e1, Issue e2) {
-				int e1ID = Integer.valueOf(e1.getID());
-				int e2ID = Integer.valueOf(e2.getID());
+				int e1ID = Integer.valueOf(e1.getIssueNum());
+				int e2ID = Integer.valueOf(e2.getIssueNum());
 
 				return compareInteger(e1ID, e2ID) * ((order) ? 1 : -1);
 			}
@@ -599,16 +599,16 @@ public class LocalDB {
 			throws JSONException, SQLException {
 		ArrayList<Volume> resultVolume = new ArrayList<>();
 
-		String columnName = inputColumn;//what field we are searching
+		String columnName = inputColumn;// what field we are searching
 
-		//make connection
+		// make connection
 		conn = DriverManager.getConnection(url);
 		stat = conn.createStatement();
 
-		//what we are searching for
+		// what we are searching for
 		String searchValue = inputValue;
-		
-		//build query
+
+		// build query
 		String sql = "SELECT JSON FROM volume WHERE ";
 		if (inputValue.chars().allMatch(Character::isDigit)) {
 
@@ -629,7 +629,8 @@ public class LocalDB {
 		JSONObject tObj = null;
 		Volume vol = null;
 
-		//make volumes from the json string returned from database and stores in ArrayList
+		// make volumes from the json string returned from database and stores
+		// in ArrayList
 		while (rs.next()) {
 			value = rs.getString(1);
 			tObj = new JSONObject(value);
@@ -699,7 +700,6 @@ public class LocalDB {
 		return resultIssue;
 	}
 
-	
 	public static int compareInteger(int inputA, int inputB) {
 		int result;
 
@@ -718,8 +718,8 @@ public class LocalDB {
 		final Comparator<Volume> comparatorVolume = new Comparator<Volume>() {
 
 			public int compare(Volume v1, Volume v2) {
-				String name1 = v1.getName().replace("The", "");
-				String name2 = v2.getName().replace("The", "");
+				String name1 = v1.getName().replace("The ", "");
+				String name2 = v2.getName().replace("The ", "");
 				int result = name1.compareTo(name2);
 
 				if (result == 0) {
@@ -818,8 +818,8 @@ public class LocalDB {
 
 		return false;
 	}
-	
-	public static String[] getAllIDs(){
+
+	public static String[] getAllIDs() {
 		ArrayList<String> iList = new ArrayList<String>();
 		try {
 			conn = DriverManager.getConnection(url);

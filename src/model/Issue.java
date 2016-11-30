@@ -133,6 +133,12 @@ public class Issue {
 	public String toString(){
 		return "issue#: "+issueNum+"\tid: "+id+"\t name: "+name+"\t\tcover date: "+coverDate;
 	}
+	
+	public String getArcName(){
+		if(check("story_arc_credits")){
+			return jo.getJSONArray("story_arc_credits").getJSONObject(0).getString("name");
+		} else return null;
+	}
 
 	public boolean check (String target){
 		if(jo.has(target) && !jo.isNull(target)){

@@ -39,7 +39,9 @@ Default label look
     -fx-font-family: "Arial";
 }
 
-
+.tab-header-background {
+    -fx-background-color: #2B2B2B ;
+}
 
 /**************************
            Button
@@ -77,8 +79,18 @@ Default button theme
     -fx-opacity: -fx-disabled-opacity;
 }
 
-
-
+.radio-button {
+/*-fx-font-family: "Arial";
+-fx-font-size: 11;
+    -fx-text-fill: rgb(255, 255, 255, 0.4);
+-fx-text-fill: lightgoldenrodyellow;
+    -fx-effect: dropshadow(one-pass-box , rgba(0, 0, 0, 0.6), 0, 0.0 , 0 , 1 );
+-fx-border-width: 0px;*/
+    -fx-background-color: #49454A;
+    -fx-text-fill:  -fx-text-inner-color;
+    -fx-prompt-text-fill: #999999;
+    -fx-background-radius: 100;
+}
 
 /**************************
            Hyperlink
@@ -95,9 +107,6 @@ Links to Comic Vine
 .hyperlink:hover {
     -fx-underline: true;
 }
-
-
-
 
 /********************************************
           Text Field

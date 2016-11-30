@@ -6,9 +6,11 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
+import localDB.LocalDB;
 import model.Issue;
 import scenes.IssuePreview;
 import scenes.VolumePreview;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
@@ -44,8 +46,8 @@ public class VolumeCell extends TreeItem {
 	 *            - ArrayList of all the issues
 	 */
 	public synchronized void setIssues(ArrayList<Issue> allIssues) {
-		for (Issue i : allIssues) {
-			if (i.getVolumeID().equals(vp.getVolume().getID())) {
+//		for (Issue i : allIssues) {
+//			if (i.getVolumeID().equals(vp.getVolume().getID())) {
 //				// System.out.println("Adding " + i);
 //				// Had to insert this inorder to prevent multiple threads
 //				// writing to children
@@ -54,8 +56,21 @@ public class VolumeCell extends TreeItem {
 //						getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
 //					}
 //				});
-				getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
+//				//getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
+//			}
+//		}
+		//make a list of issues that are in this volume for sorting purposes
+		ArrayList<Issue> volumeIssues = new ArrayList<>();
+		for(Issue i : allIssues){
+			if (i.getVolumeID().equals(vp.getVolume().getID())) {//check by volume ID
+				volumeIssues.add(i);
 			}
+		}
+		
+		LocalDB.sortIssuesByIssueNum(volumeIssues, false);//sort the issues
+		
+		for(Issue i: volumeIssues){//add issues to the volume preview in the sorted order
+			getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
 		}
 		filled = true;
 	}

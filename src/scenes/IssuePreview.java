@@ -3,23 +3,28 @@ package scenes;
 import java.awt.image.BufferedImage;
 
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import model.Issue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.ContextMenuEvent;
 
-public class IssuePreview extends HBox{
+public class IssuePreview extends HBox {
 	private Issue issue;
 	private ImageView thumb;
 	private BufferedImage bi;
 	private Label infoLbl;
 	private Label addLabel;
-	
+
 	public IssuePreview(Issue rhIssue) {
 		super();
-		
+
 		issue = rhIssue;
 		long start = System.currentTimeMillis();
 		bi = issue.getImage("thumb");
@@ -28,26 +33,60 @@ public class IssuePreview extends HBox{
 		addLabel = new Label();
 		addLabel.setTextFill(Color.RED);
 		addLabel.setVisible(false);
-		/*System.out.println("Image fetch for " + issue.getVolumeName() + " #" + issue.getIssueNum()
-							+ " took :" + (System.currentTimeMillis() - start));*/
+		/*
+		 * System.out.println("Image fetch for " + issue.getVolumeName() + " #"
+		 * + issue.getIssueNum() + " took :" + (System.currentTimeMillis() -
+		 * start));
+		 */
 		thumb.setFitHeight(50);
 		thumb.setFitWidth(33);
-		
-		String info = issue.getVolumeName() + " #" + issue.getIssueNum() + "\nDate: " + issue.getCoverDate(); 
+
+		String info = issue.getVolumeName() + " #" + issue.getIssueNum() + "\nDate: " + issue.getCoverDate();
 		infoLbl = new Label(info);
-		getChildren().addAll(thumb, infoLbl, addLabel);	
+		getChildren().addAll(thumb, infoLbl, addLabel);
+
+		ContextMenu contextMenu = new ContextMenu();
+		MenuItem item1 = new MenuItem("delete");
+		item1.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				// localDB.remove
+				// we need to add remove into localdb
+				// how to updateleft in this class???
+				// updateleft in the main use added list
+				// we got problem here so for now don't update
+				infoLbl.setText("DELETE TEST ON CONTEXT MENU");
+			}
+		});
+		// Add MenuItem to ContextMenu
+		contextMenu.getItems().addAll(item1);
+		// When user right-click issue preview
+		setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+
+			@Override
+			public void handle(ContextMenuEvent event) {
+				contextMenu.show(infoLbl, event.getScreenX(), event.getScreenY());
+			}
+		});
 	}
-	
-	public Issue getIssue(){
+
+	public Issue getIssue() {
 		return issue;
 	}
-	
-	public void setAddInfo(String s){
+
+	public void setAddInfo(String s) {
 		addLabel.setText(s);
 		addLabel.setVisible(true);
 	}
 	
-	public BufferedImage getImage(){
+	public void setVolumeName(){
+		addLabel.setText(issue.getVolumeName());
+		addLabel.setVisible(true);
+		addLabel.setTextFill(Color.BLACK);
+	}
+
+	public BufferedImage getImage() {
 		return bi;
 	}
 }
