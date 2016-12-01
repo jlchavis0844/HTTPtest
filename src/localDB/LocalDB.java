@@ -91,6 +91,11 @@ public class LocalDB {
 	public static int ISSUE = 0;
 	public static int VOLUME = 1;
 
+	/**
+	 * Inserts issue along with corresponding volume, if needed and fetches aand stores images
+	 * @param issue
+	 * @return
+	 */
 	public static boolean addIssue(Issue issue) {
 		try {
 			conn = DriverManager.getConnection(url);
@@ -173,6 +178,11 @@ public class LocalDB {
 		return true;
 	}
 
+	/**
+	 * AAdds volume and corresponding data such aas pictures to the database
+	 * @param vol Volume object to be added to the database
+	 * @return true if the volume was added, false otherwise
+	 */
 	public static boolean addVolume(Volume vol) {
 		if (exists(vol.getID(), VOLUME))
 			return false;
@@ -737,21 +747,24 @@ public class LocalDB {
 		if (inputID.chars().allMatch(Character::isDigit)) {
 
 			try {
-				conn = DriverManager.getConnection(url);
-				stat = conn.createStatement();
+				Connection c = DriverManager.getConnection(url);
 
-				String sql = "DELETE FROM volume WHERE id = " + "'" + inputID + "'";
+				String sql = "DELETE FROM VOLUME WHERE id = '" + inputID + "';";
+				stat = c.createStatement();
+				int count = stat.executeUpdate(sql);
+				System.out.println("Trying to delete: " + ((count == 1) ? "Worked" : "Failed"));
+//				PreparedStatement pre = conn.prepareStatement(sql);
+//				pre.setString(1, inputID);
+//
+//				pre.executeUpdate(sql);
 
-				PreparedStatement pre = conn.prepareStatement(sql);
-
-				pre.executeUpdate(sql);
-
-				return true;
+				if(count == 1){
+					return true;
+				} else return false;
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		}
 		return false;
 	}
@@ -764,20 +777,19 @@ public class LocalDB {
 				conn = DriverManager.getConnection(url);
 				stat = conn.createStatement();
 
-				String sql = "DELETE FROM issue WHERE id = '" + inputID + "';";
-
+				String sql = "DELETE FROM issue WHERE id = ?;";
 				PreparedStatement pre = conn.prepareStatement(sql);
-
-				pre.executeUpdate(sql);
-
+				pre.setString(1, inputID);
+				pre.executeUpdate();
+				
 				return true;
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
+			System.out.println("Deleted " + inputID);
 		}
-		return false;
+		return true;
 	}
 
 	public static boolean deleteVolumeByName(String inputName) {

@@ -42,7 +42,11 @@ Default label look
 .tab-header-background {
     -fx-background-color: #2B2B2B ;
 }
-
+.tab{
+	-fx-background-color: Grey;
+	-fx-border-color: #6E6E6E;
+	-fx-text-fill: white;
+}
 /**************************
            Button
 Default button theme

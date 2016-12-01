@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.json.JSONException;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -21,7 +19,6 @@ import javafx.stage.Stage;
 import localDB.LocalDB;
 import model.Issue;
 import model.Volume;
-import requests.SQLQuery;
 import scenes.AddComic;
 import scenes.DetailView;
 import scenes.IssueLoadScreen;
@@ -31,7 +28,6 @@ import scenes.VolumePreview;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -39,6 +35,7 @@ import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.*;
 
 /**
@@ -175,12 +172,12 @@ public class Main extends Application {
 		 * Lets go with a tabbed view
 		 */
 		TabPane tabs = new TabPane();
+		tabs.setPadding(new Insets(10));
 		// tabs.getStyleClass().add("floating");
 		tabs.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-		Tab allIssTab = new Tab("Collection");
+		Tab allIssTab = new Tab("  Collection  ");
 		allIssTab.setContent(leftScroll);
-
-		Tab srchTab = new Tab("Search Collection");
+		Tab srchTab = new Tab("  Search Collection  ");
 		// Need another scrollPane and vbox to hold the seaarach results.
 		VBox srchVBox = new VBox(10);
 		srchVBox.setFillWidth(true);
@@ -266,19 +263,9 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		// org.json.JSONObject jo = CVrequest.getIssue("488852");
-		// Volume test = new Volume(jo.getJSONObject("volume"));
-		// LocalDB.addVolume(test);
-		// new VolumePreview(test);
-		// MarvelRequest.test();
-		// ArrayList<Volume> vols = CVrequestAsync.searchVolume("Batman", "DC");
-		// for(Volume v: vols)
-		// System.out.println(v.toString());
+
 		launch(args);
-		// System.out.println("to adjust");
-		// SQLQuery.getLoginInfo();
-		// String arr[] = {"123","456","789"};
-		// SQLQuery.removeIssue(arr);
+
 	}
 
 	public static void updateLeft() {
@@ -315,7 +302,10 @@ public class Main extends Application {
 				public void run() {
 					Platform.runLater(new Runnable() {
 						public void run() {
-							((VolumeCell) obj).setIssues(allIssues);
+							boolean hasIssues = ((VolumeCell) obj).setIssues(allIssues);
+							if(!hasIssues){
+								System.out.println("Warning: No issues found for " + ((VolumeCell) obj).getVolumeName());
+							}
 						}
 					});
 				}
@@ -352,6 +342,11 @@ public class Main extends Application {
 		backgroundLoadIssues();// start loading issues
 	}
 	
+	/**
+	 * Runs search on the user's collection 
+	 * @param field which field is being searched
+	 * @param srchText what we are searching for
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void userSearch(String field, String srchText){
 		try {
@@ -372,5 +367,4 @@ public class Main extends Application {
 			e1.printStackTrace();
 		}
 	}
-	
 }

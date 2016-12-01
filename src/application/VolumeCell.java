@@ -21,7 +21,7 @@ public class VolumeCell extends TreeItem {
 	boolean filled = false;
 
 	/**
-	 * 
+	 * Holds volume preview in the collections treeview
 	 * @param vPre
 	 */
 	
@@ -45,34 +45,23 @@ public class VolumeCell extends TreeItem {
 	 * @param allIssues
 	 *            - ArrayList of all the issues
 	 */
-	public synchronized void setIssues(ArrayList<Issue> allIssues) {
-//		for (Issue i : allIssues) {
-//			if (i.getVolumeID().equals(vp.getVolume().getID())) {
-//				// System.out.println("Adding " + i);
-//				// Had to insert this inorder to prevent multiple threads
-//				// writing to children
-//				Platform.runLater(new Runnable() {
-//					public void run() {
-//						getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
-//					}
-//				});
-//				//getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
-//			}
-//		}
-		//make a list of issues that are in this volume for sorting purposes
+	public synchronized boolean setIssues(ArrayList<Issue> allIssues) {
+
 		ArrayList<Issue> volumeIssues = new ArrayList<>();
 		for(Issue i : allIssues){
 			if (i.getVolumeID().equals(vp.getVolume().getID())) {//check by volume ID
 				volumeIssues.add(i);
 			}
 		}
-		
+		if(volumeIssues.isEmpty())
+			return false;
 		LocalDB.sortIssuesByIssueNum(volumeIssues, false);//sort the issues
 		
 		for(Issue i: volumeIssues){//add issues to the volume preview in the sorted order
 			getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
 		}
 		filled = true;
+		return true;
 	}
 
 	/**
@@ -81,5 +70,9 @@ public class VolumeCell extends TreeItem {
 	 */
 	public boolean isFilled() {
 		return filled;
+	}
+	
+	public String getVolumeName(){
+		return vp.getVolName();
 	}
 }

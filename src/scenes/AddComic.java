@@ -25,6 +25,7 @@ public class AddComic {
 	private Button removeButton;
 	private Button srchButton;
 	private Button addButton;
+	private Button doneButton;
 	private BorderPane layout;
 	private HBox topBox;
 	private TextField input;
@@ -33,18 +34,17 @@ public class AddComic {
 	private ListView<VolResult> list;
 	private ListView<IssueResult> issueList;
 	private List<Issue> addList;
+	private Stage window;
 
 	public AddComic(List<Issue> added) {
 		addList = added;
-		Stage window = new Stage();
+		window = new Stage();
 		window.setTitle("Add Comics!");
 		window.initModality(Modality.APPLICATION_MODAL);
+
 		window.setOnCloseRequest(e -> {
 			e.consume();
-			boolean temp = ConfirmBox.display("Close Add Comic?", "Are you done adding comics?");
-			if (temp) {
-				window.close();
-			}
+			closeThis();
 		});
 
 		layout = new BorderPane();
@@ -82,6 +82,8 @@ public class AddComic {
 		scPane.setMinWidth(1000);
 		scPane.setMinHeight(800);
 		scPane.setFitToWidth(true);
+		scPane.setFitToHeight(true);
+		scPane.setStyle("-fx-background: rgb(80,80,80);");
 
 		input = new TextField();
 		input.setPromptText("Enter Search Terms");
@@ -96,10 +98,11 @@ public class AddComic {
 		backButton = new Button("Back");
 		removeButton = new Button("Remove");
 		deleteButton = new Button("Delete");
-		addButton.setVisible(false);
-		backButton.setVisible(false);
-		removeButton.setVisible(false);
-		deleteButton.setVisible(false);
+		doneButton = new Button("Done Adding");
+		addButton.setDisable(false);
+		backButton.setDisable(false);
+		removeButton.setDisable(false);
+		deleteButton.setDisable(false);
 
 		addButton.setOnAction(e -> {
 			Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
@@ -109,24 +112,27 @@ public class AddComic {
 				System.out.println("issue is null");
 
 			addList.add(iSel);
-			addButton.setVisible(false);
-			removeButton.setVisible(true);
-			backButton.setVisible(true);
+			addButton.setDisable(false);
+			removeButton.setDisable(true);
+			backButton.setDisable(true);
 		});
 
 		srchButton.setOnAction(e -> {
-			addButton.setVisible(false);
-			scPane.setContent(list);
-			System.out.println(input.getText());
-			volSearch(input.getText(), pubName.getText());
+			if (!input.getText().equals("")) {
+				addButton.setDisable(false);
+				scPane.setContent(list);
+				System.out.println(input.getText());
+				volSearch(input.getText(), pubName.getText());
+			}
+
 		});
 
 		backButton.setOnAction(e -> {
-			addButton.setVisible(false);
+			addButton.setDisable(false);
 			scPane.setContent(list);
-			backButton.setVisible(false);
-			removeButton.setVisible(false);
-			deleteButton.setVisible(false);
+			backButton.setDisable(false);
+			removeButton.setDisable(false);
+			deleteButton.setDisable(false);
 		});
 
 		// get the issue that user selected
@@ -143,18 +149,22 @@ public class AddComic {
 				tempList.add(addList.get(i));
 			}
 			addList = tempList;
-			deleteButton.setVisible(false);
-			backButton.setVisible(true);
-		});
-		
-		removeButton.setOnAction(e -> {		
-			addList.remove(addList.size()-1);
-            removeButton.setVisible(false);
-            addButton.setVisible(true);
-            backButton.setVisible(true);
+			deleteButton.setDisable(false);
+			backButton.setDisable(true);
 		});
 
-		topBox.getChildren().addAll(input, pubName, srchButton, addButton);
+		removeButton.setOnAction(e -> {
+			addList.remove(addList.size() - 1);
+			removeButton.setDisable(false);
+			addButton.setDisable(true);
+			backButton.setDisable(true);
+		});
+
+		doneButton.setOnAction(e -> {
+			closeThis();
+		});
+
+		topBox.getChildren().addAll(input, pubName, srchButton, addButton, doneButton);
 
 		// layout.setPadding(new javafx.geometry.Insets(10));
 		layout.setTop(topBox);
@@ -191,7 +201,7 @@ public class AddComic {
 		}
 
 		int volSize = vols.size();
-		while (volSize != adds.get()) {};// wait for threads to catchup
+		while (volSize != adds.get()) {}// wait for threads to catchup
 
 		ObservableList<VolResult> obvRes = FXCollections.observableList(results);
 		list.setItems(obvRes);
@@ -218,19 +228,26 @@ public class AddComic {
 			public void changed(ObservableValue<? extends IssueResult> observable, IssueResult oldValue,
 					IssueResult newValue) {
 				layout.setCenter(new DetailView(newValue.getIssue()));
-                Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
-                
-                if(addList.contains(iSel)){
-                	deleteButton.setVisible(true);
-                	addButton.setVisible(false);
-                }
-                else if(!addList.contains(iSel)){
-                	deleteButton.setVisible(false);
-                	addButton.setVisible(true);
-                }
+				Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
+
+				if (addList.contains(iSel)) {
+
+					deleteButton.setDisable(true);
+					addButton.setDisable(false);
+				} else if (!addList.contains(iSel)) {
+					deleteButton.setDisable(false);
+					addButton.setDisable(true);
+				}
 			}
 		});
 		scPane.setContent(issueList);
 		System.out.println("scPane: " + scPane.getHeight() + "\tissueList " + issueList.getHeight());
+	}
+
+	public void closeThis() {
+		boolean temp = ConfirmBox.display("Close Add Comic?", "Are you done adding comics?");
+		if (temp) {
+			window.close();
+		}
 	}
 }

@@ -293,7 +293,9 @@ public class SQLQuery {
 		
 		ArrayList<String> deletedIDs = getDeletedIDs(info[0], info[1], info[2]);
 		for(String s: deletedIDs){
-			if(LocalDB.exists(s, LocalDB.ISSUE));
+			if(LocalDB.exists(s, LocalDB.ISSUE)){
+				LocalDB.deleteIssueByID(s);
+			}
 		}
 		
 		sendIDs(info[0], info[1], LocalDB.getAllIDs());

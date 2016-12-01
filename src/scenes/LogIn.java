@@ -3,9 +3,6 @@ package scenes;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-
-import org.json.JSONObject;
-
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -14,7 +11,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -29,16 +25,12 @@ public class LogIn {
 	private PasswordField passwordTextField;
 	private Label incorrect;
 	private boolean newUser = false;
-	private JSONObject jo;
 	private String[] info;
-	private String timeStamp;
 
 	public LogIn() throws IOException {
 		Stage stage = new Stage();
-		timeStamp = getCurrentTimeStamp();
 
 		stage.setTitle("Welcome | Login or Sign Up");
-		BorderPane bp = new BorderPane();
 		GridPane grid = new GridPane();
 
 		incorrect = new Label("Logging in failed");//will hold error message
@@ -65,7 +57,7 @@ public class LogIn {
 		loginButton.setOnAction(e ->{
 			info[0] = usernameTextField.getText();
 			info[1] = passwordTextField.getText();
-			info[2] = getCurrentTimeStamp();
+			//info[2] = getCurrentTimeStamp();
 			info[3] = String.valueOf(cb.isSelected());
 			System.out.println("Sending login info... " + arrString(info));
 			boolean temp = SQLQuery.login(info[0], info[1]);
@@ -95,10 +87,6 @@ public class LogIn {
 			loginButton.setVisible(false);//hide login until registration is done
 		}
 
-		if (!newUser) {//if this is not a new user, mark current timstamp as last login
-			timeStamp = info[2];//if n
-		}
-
 		// grid.add(loginLabel, 1, 0, 1, 1);
 		grid.add(usernameTextField, 1, 0, 2, 1);
 		grid.add(passwordTextField, 1, 1, 2, 1);
@@ -122,6 +110,7 @@ public class LogIn {
 		boolean loggedIn = false;
 		if(!cb.isSelected()){
 			stage.showAndWait();
+			SQLQuery.fullSync();
 		} else if(!newUser && cb.isSelected()){
 			loggedIn = SQLQuery.login(info[0], info[1]);
 			SQLQuery.fullSync();

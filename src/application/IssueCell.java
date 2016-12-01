@@ -7,7 +7,11 @@ import javafx.scene.control.TreeItem;
 import scenes.IssuePreview;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-
+/**
+ * Class thaat holds the collection search Results in the treeview
+ * @author James
+ *
+ */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class IssueCell extends TreeItem {
 	private IssuePreview ip;
