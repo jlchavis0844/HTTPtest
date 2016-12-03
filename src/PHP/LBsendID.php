@@ -89,5 +89,5 @@ foreach ($idArr as $arrId) {
 #print_r($assocArr);
 
 echo json_encode($assocArr);
-
+		
 ?>

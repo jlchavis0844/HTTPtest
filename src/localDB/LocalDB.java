@@ -516,10 +516,10 @@ public class LocalDB {
 	public static void sortIssuesByIssueNum(ArrayList<Issue> input, boolean order) throws JSONException {
 		final Comparator<Issue> comparatorIssue = new Comparator<Issue>() {
 			public int compare(Issue e1, Issue e2) {
-				int e1ID = Integer.valueOf(e1.getIssueNum());
-				int e2ID = Integer.valueOf(e2.getIssueNum());
+				double e1ID = checkDouble(e1.getIssueNum());
+				double e2ID = checkDouble(e2.getIssueNum());
 
-				return compareInteger(e1ID, e2ID) * ((order) ? 1 : -1);
+				return Double.compare(e1ID, e2ID) * ((order) ? 1 : -1);
 			}
 		};
 		Collections.sort(input, comparatorIssue);
@@ -710,9 +710,10 @@ public class LocalDB {
 		return resultIssue;
 	}
 
+	
+	//TODO: remove this function, call Integer.compare() instead
 	public static int compareInteger(int inputA, int inputB) {
 		int result;
-
 		if (inputA == inputB) {
 			result = 0;
 		} else if (inputA < inputB) {
@@ -722,7 +723,7 @@ public class LocalDB {
 		}
 		return result;
 	}
-
+	
 	public static void sortVolumes(List<Volume> volList) {
 
 		final Comparator<Volume> comparatorVolume = new Comparator<Volume>() {
@@ -831,6 +832,10 @@ public class LocalDB {
 		return false;
 	}
 
+	/**
+	 * Fetches and builds all issues	
+	 * @return ArrayList<Issue> of every issue
+	 */
 	public static String[] getAllIDs() {
 		ArrayList<String> iList = new ArrayList<String>();
 		try {
@@ -860,5 +865,40 @@ public class LocalDB {
 			return null;
 		return iList.toArray(new String[iList.size()]);
 	}
-
+	
+	/**
+	 * Checks if string is an integer and handles exception by returning MIN_VALUE
+	 * @param s the string to check 
+	 * @return Integer.MIN_VALUE on invalid, number on valid
+	 */
+	public static int checkInt(String s){
+		int val = Integer.MIN_VALUE;
+		try{
+			val = Integer.parseInt(s);
+		} catch( NumberFormatException e){
+			System.out.println("Failed to convert " + s);
+		}
+		return val;
+	}
+	
+	/**
+	 * Checks if string is an double and handles exception by returning MIN_VALUE
+	 * @param s the string to check 
+	 * @return Double.MIN_VALUE on invalid, number on valid
+	 */
+	public static double checkDouble(String s){
+		double val = Double.MIN_NORMAL;
+		try{
+			val = Double.parseDouble(s);
+		} catch( NumberFormatException e){
+			if(s.contains(".")){
+				String temp = s.split(".")[0];
+				 val = checkDouble(temp);
+				System.out.println(s + " is not a Double, checking " + temp);
+			}
+			System.out.println("could not convert " + s);
+		}
+		return val;
+	}
+	
 }

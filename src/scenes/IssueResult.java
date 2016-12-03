@@ -64,7 +64,4 @@ public class IssueResult extends VBox {
 	public void setText(Label text) {
 		this.text = text;
 	}
-	
-
-
 }

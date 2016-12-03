@@ -108,10 +108,7 @@ public class Main extends Application {
 		}
 		System.out.println("time to load all volumes " + (System.currentTimeMillis() - start));
 
-		treeView = new TreeView<VolumePreview>(buildRoot("Volumes", volPreviews));// tree
-																					// for
-																					// volume
-																					// cells
+		treeView = new TreeView<VolumePreview>(buildRoot("Volumes", volPreviews));// tree for  volume cells
 		treeView.setPrefWidth(500);
 		treeView.setPrefHeight(950);
 
@@ -196,6 +193,7 @@ public class Main extends Application {
 
 		tabs.getTabs().addAll(allIssTab, srchTab);
 		leftSide.getChildren().add(tabs);
+		//leftSide.setStyle("-fx-border-color: grey");
 
 		srchTree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem>() {
 			@Override
@@ -250,7 +248,8 @@ public class Main extends Application {
 		});
 		window.setMaximized(true);
 		Scene scene = new Scene(layout, 1900, 1050);
-		System.out.println("applying " + getClass().getResource("../application.css").toExternalForm());
+		System.out.println(getClass().getResource("../application.css"));
+		//System.out.println("applying " + getClass().getResource("../application.css").toExternalForm());
 		String style = getClass().getResource("../application.css").toExternalForm();
 		scene.getStylesheets().add(style);
 		window.setScene(scene);
@@ -265,6 +264,7 @@ public class Main extends Application {
 	public static void main(String[] args) {
 
 		launch(args);
+		System.exit(0);
 
 	}
 
@@ -319,26 +319,24 @@ public class Main extends Application {
 	 */
 	public static void backgroundLoadVols() {
 		System.out.println("Starting background load of volumes");
-		ExecutorService executorService = Executors.newFixedThreadPool(10);
+//		ExecutorService executorService = Executors.newFixedThreadPool(10);
 		int volNum = allVols.size();
 		AtomicInteger counter = new AtomicInteger(0);
 
 		for (Object obj : treeView.getRoot().getChildren()) {
-			executorService.execute(new Runnable() {
-				public void run() {
+//			executorService.execute(new Runnable() {
+//				public void run() {
 					// System.out.println(counter.incrementAndGet() + " ?= " +
 					// volNum);
 					((VolumePreview) ((VolumeCell) obj).getValue()).setImage();
 					System.out.println("done loading " + ((VolumePreview) ((VolumeCell) obj).getValue()).getVolName());
-					counter.incrementAndGet();
-				}
-			});
+//					counter.incrementAndGet();
+//				}
+//			});
 		}
-		executorService.shutdown();
-
-		while (counter.get() != volNum) {
-		}
-		;// wait here to load volumes
+//		executorService.shutdown();
+//
+//		while (counter.get() != volNum) {}// wait here to load volumes
 		backgroundLoadIssues();// start loading issues
 	}
 	

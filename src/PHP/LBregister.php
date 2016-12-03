@@ -17,14 +17,14 @@ $dbname = "longbox";//removes need to have database.tableName
 
 // connect to database
 $con = new mysqli ( $host, $user, $password, $dbname, $port, $socket ) or 
-	die ( json_encode('Could not connect to the database server, ' . mysqli_connect_error () ));
+die ( json_encode('ERROR: Could not connect to the database server, ' . mysqli_connect_error () ));
 
 $query = "SELECT COUNT(*) FROM `longbox`.`login` WHERE `userName` = '$lbUser';";
 
 $results = mysqli_query($con, $query);
 
 if(!$results){//on fail
-	die(json_encode('failed on id query, ' . $con->error));
+	die(json_encode('ERROR: failed on id query, ' . $con->error));
 }
 
 //save results
@@ -34,26 +34,21 @@ if($row[0] == 0){//if count is zero, user name does not exist
 	/**
 		Generate time stamp for the log in table.
 	*/
-	$now = new DateTime ();
-	$now->setTimezone ( new DateTimeZone ( 'America/Los_Angeles' ) );
-	$tStamp = $now->format ( 'Y-m-d H:i:s' );
+		$now = new DateTime ();
+		$now->setTimezone ( new DateTimeZone ( 'America/Los_Angeles' ) );
+		$tStamp = $now->format ( 'Y-m-d H:i:s' );
 
 	//query string to insert a new user
-	$query = "INSERT INTO `longbox`.`login` (`userName`, `password`) VALUES ('$lbUser', '$lbPass');
-			";
-	
+		$query = "INSERT INTO `longbox`.`login` (`userName`, `password`) VALUES ('$lbUser', '$lbPass');
+		";
+
 	//print $query . "<br>";
-	$results = mysqli_query($con, $query);
-	
+		$results = mysqli_query($con, $query);
+
 	if(!$results){//check for a failed connection
-		die(json_encode('registration failed, ' . $con->error));//insert failed, true error
+		die(json_encode('ERROR: registration failed, ' . $con->error));//insert failed, true error
 	} else echo json_encode('registration worked');//it worked
 } else {//user exists, not a true error, just not a sucess.
-	echo json_encode("registration failed, user name $lbUser exists");
+	echo json_encode("ERROR: registration failed, user name $lbUser exists");
 }	
-
-
-
-
-
 ?>

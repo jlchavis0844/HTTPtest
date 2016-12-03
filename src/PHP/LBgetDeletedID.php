@@ -82,7 +82,7 @@ if ($stmt = $con->prepare ( $query )) {
 $arr = array();//make a temporary array to hold id's
 
 //build a query to get the id's to sync
-$query = "SELECT `id` FROM `longbox`.`issues` WHERE `userName` = '$lbUser' AND `timestamp` > '$lbTime';";
+$query = "SELECT `id` FROM `longbox`.`deletedissues` WHERE `userName` = '$lbUser' AND `deleted` > '$lbTime';";
 
 //store the results
 $results = mysqli_query($con, $query);

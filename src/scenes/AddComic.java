@@ -18,6 +18,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import localDB.LocalDB;
 
 public class AddComic {
 	private Button backButton;
@@ -71,6 +72,8 @@ public class AddComic {
 
 				System.out.println("Fetching " + vID);
 				getIssues(vID);
+				backButton.setDisable(false);
+				addButton.setDisable(true);
 			}
 		});
 
@@ -99,10 +102,10 @@ public class AddComic {
 		removeButton = new Button("Remove");
 		deleteButton = new Button("Delete");
 		doneButton = new Button("Done Adding");
-		addButton.setDisable(false);
-		backButton.setDisable(false);
-		removeButton.setDisable(false);
-		deleteButton.setDisable(false);
+		addButton.setDisable(true);
+		backButton.setDisable(true);
+		removeButton.setDisable(true);
+		deleteButton.setDisable(true);
 
 		addButton.setOnAction(e -> {
 			Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
@@ -112,14 +115,14 @@ public class AddComic {
 				System.out.println("issue is null");
 
 			addList.add(iSel);
-			addButton.setDisable(false);
-			removeButton.setDisable(true);
-			backButton.setDisable(true);
+			addButton.setDisable(true);
+			removeButton.setDisable(false);
+			backButton.setDisable(false);
 		});
 
 		srchButton.setOnAction(e -> {
 			if (!input.getText().equals("")) {
-				addButton.setDisable(false);
+				addButton.setDisable(true);
 				scPane.setContent(list);
 				System.out.println(input.getText());
 				volSearch(input.getText(), pubName.getText());
@@ -128,11 +131,13 @@ public class AddComic {
 		});
 
 		backButton.setOnAction(e -> {
-			addButton.setDisable(false);
+			addButton.setDisable(true);
 			scPane.setContent(list);
-			backButton.setDisable(false);
-			removeButton.setDisable(false);
-			deleteButton.setDisable(false);
+			backButton.setDisable(true);
+			removeButton.setDisable(true);
+			deleteButton.setDisable(true);
+			list.getSelectionModel().clearAndSelect(-1);
+			backButton.fire();
 		});
 
 		// get the issue that user selected
@@ -149,22 +154,22 @@ public class AddComic {
 				tempList.add(addList.get(i));
 			}
 			addList = tempList;
-			deleteButton.setDisable(false);
-			backButton.setDisable(true);
+			deleteButton.setDisable(true);
+			backButton.setDisable(false);
 		});
 
 		removeButton.setOnAction(e -> {
-			addList.remove(addList.size() - 1);
-			removeButton.setDisable(false);
-			addButton.setDisable(true);
-			backButton.setDisable(true);
+			addList.remove(issueList.getSelectionModel().getSelectedItem().getIssue());
+			removeButton.setDisable(true);
+			addButton.setDisable(false);
+			backButton.setDisable(false);
 		});
 
 		doneButton.setOnAction(e -> {
 			closeThis();
 		});
 
-		topBox.getChildren().addAll(input, pubName, srchButton, addButton, doneButton);
+		topBox.getChildren().addAll(input, pubName, srchButton, addButton, removeButton, backButton, doneButton);
 
 		// layout.setPadding(new javafx.geometry.Insets(10));
 		layout.setTop(topBox);
@@ -176,6 +181,7 @@ public class AddComic {
 		String style = getClass().getResource("../application.css").toExternalForm();
 		scene.getStylesheets().add(style);
 		window.setScene(scene);
+		window.setMaximized(true);
 		window.showAndWait();
 	}
 
@@ -189,19 +195,13 @@ public class AddComic {
 		}
 
 		List<VolResult> results = new ArrayList<VolResult>();
-		AtomicInteger adds = new AtomicInteger(0);
+
 		for (Volume v : vols) {
 			// leftBox.getChildren().add(new VolumeButton(v, this));
-			new Thread() {
-				public void run() {
-					results.add(new VolResult(v));
-					System.out.println("tread #" + this.getId() + " added # " + adds.incrementAndGet());
-				}
-			}.start();
+			results.add(new VolResult(v));
 		}
 
 		int volSize = vols.size();
-		while (volSize != adds.get()) {}// wait for threads to catchup
 
 		ObservableList<VolResult> obvRes = FXCollections.observableList(results);
 		list.setItems(obvRes);
@@ -209,6 +209,7 @@ public class AddComic {
 
 	public void getIssues(String volID) {
 		ArrayList<Issue> issues = CVrequest.getVolumeIDs(volID);
+		LocalDB.sortIssuesByIssueNum(issues, true);
 		List<IssueResult> results = new ArrayList<IssueResult>();
 
 		for (Issue i : issues) {
@@ -232,16 +233,16 @@ public class AddComic {
 
 				if (addList.contains(iSel)) {
 
-					deleteButton.setDisable(true);
-					addButton.setDisable(false);
-				} else if (!addList.contains(iSel)) {
 					deleteButton.setDisable(false);
 					addButton.setDisable(true);
+				} else if (!addList.contains(iSel)) {
+					deleteButton.setDisable(true);
+					addButton.setDisable(false);
 				}
 			}
 		});
 		scPane.setContent(issueList);
-		System.out.println("scPane: " + scPane.getHeight() + "\tissueList " + issueList.getHeight());
+		//System.out.println("scPane: " + scPane.getHeight() + "\tissueList " + issueList.getHeight());
 	}
 
 	public void closeThis() {

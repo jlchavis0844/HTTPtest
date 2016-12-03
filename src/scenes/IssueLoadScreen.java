@@ -15,6 +15,16 @@ import javafx.stage.Stage;
 import localDB.LocalDB;
 import model.Issue;
 
+/*
+ * the screen the show up after user close the added scene
+ * right now the code will run through the list of user selected issues
+ * any issue that is already in the collection will be ignore
+ * issue that is not in collection will be display and put in 
+ * an arraylist of issue for adding uppon closing the scene
+ * or clicking on continue button.
+ * 
+ *  cancel work, back and newadd doesn't and i don't know why.
+ */
 public class IssueLoadScreen {
 
 	public IssueLoadScreen(List<Issue> added, List<Issue> allIssues, List<VolumePreview> volPreviews) {
@@ -29,6 +39,7 @@ public class IssueLoadScreen {
 
 		ArrayList<IssuePreview> addList = new ArrayList<>();
 		ArrayList<Issue> addedCopy = new ArrayList<>(added);
+		ArrayList<Issue> willAdd = new ArrayList<Issue>();
 		IssuePreview ip = null;
 		
 		for(Issue i: addedCopy){
@@ -37,7 +48,11 @@ public class IssueLoadScreen {
 				ip.setAddInfo("Already in collection");
 				added.remove(i);
 			}
+			// the list of issue preview for display to the user
 			addList.add(ip);
+			
+			//the list of issue that we will actually add after operation is over
+			willAdd.add(i);
 		}
 		
 		// now add the arraylist of HBox into the VBox
@@ -64,13 +79,63 @@ public class IssueLoadScreen {
 			new AddComic(added);
 		});
 		
+		// user cancel what they selected
 		cancel.setOnAction(e -> {
 			stage.close();
 			added.clear();
 		});
 		
 		go.setOnAction(e -> {
+			// add the issue to DB
+			willAdd.forEach(i -> {
+				System.out.println(i);
+			});
+			for(Issue i: willAdd){
+
+				LocalDB.addIssue(i);
+				allIssues.add(i);
+				int foundIndex = -1;
+				for(int j = 0; j < volPreviews.size(); j++){
+					if(volPreviews.get(j).getVolName().equals(i.getVolumeName())){
+						foundIndex = j;
+						volPreviews.get(j).update(allIssues);
+					}
+				}
+
+				if(foundIndex == -1){
+					volPreviews.add(new VolumePreview(i.getVolume(), allIssues));
+				}
+				
+				for(VolumePreview pv: volPreviews){
+					pv.setImage();
+				}
+			}
+			//then close the stage
 			stage.close();
+		});
+
+		// if user close the stage and ignore the continue button we still add what need to be add
+		stage.setOnCloseRequest(e ->{
+			for(Issue i: willAdd){
+
+				LocalDB.addIssue(i);
+				allIssues.add(i);
+				int foundIndex = -1;
+				for(int j = 0; j < volPreviews.size(); j++){
+					if(volPreviews.get(j).getVolName().equals(i.getVolumeName())){
+						foundIndex = j;
+						volPreviews.get(j).update(allIssues);
+					}
+				}
+
+				if(foundIndex == -1){
+					volPreviews.add(new VolumePreview(i.getVolume(), allIssues));
+				}
+				for(VolumePreview pv: volPreviews){
+					pv.setImage();
+				}
+
+			}		
 		});
 		
 		HBox bottom = new HBox(5);
@@ -79,35 +144,6 @@ public class IssueLoadScreen {
 		Scene scene = new Scene(layout);
 		stage.setScene(scene);
 		stage.showAndWait();
-		// sleep 1000 msec
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		for(Issue i: added){
-
-			LocalDB.addIssue(i);
-			allIssues.add(i);
-			int foundIndex = -1;
-			for(int j = 0; j < volPreviews.size(); j++){
-				if(volPreviews.get(j).getVolName().equals(i.getVolumeName())){
-					foundIndex = j;
-					volPreviews.get(j).update(allIssues);
-				}
-			}
-
-			if(foundIndex == -1){
-				volPreviews.add(new VolumePreview(i.getVolume(), allIssues));
-			}
-			
-			for(VolumePreview pv: volPreviews){
-				pv.setImage();
-			}
-		}
-		stage.close();
 	}
 	
 }

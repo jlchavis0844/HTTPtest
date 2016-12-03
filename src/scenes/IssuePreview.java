@@ -9,6 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import localDB.LocalDB;
 import model.Issue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -45,30 +46,38 @@ public class IssuePreview extends HBox {
 		infoLbl = new Label(info);
 		getChildren().addAll(thumb, infoLbl, addLabel);
 
+		/*
+		 * context menu code
+		 */
 		ContextMenu contextMenu = new ContextMenu();
-		MenuItem item1 = new MenuItem("delete");
-		item1.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				// localDB.remove
-				// we need to add remove into localdb
-				// how to updateleft in this class???
-				// updateleft in the main use added list
-				// we got problem here so for now don't update
-				infoLbl.setText("DELETE TEST ON CONTEXT MENU");
-			}
-		});
-		// Add MenuItem to ContextMenu
-		contextMenu.getItems().addAll(item1);
-		// When user right-click issue preview
-		setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
-
-			@Override
-			public void handle(ContextMenuEvent event) {
-				contextMenu.show(infoLbl, event.getScreenX(), event.getScreenY());
-			}
-		});
+        MenuItem item1 = new MenuItem("delete");
+        item1.setOnAction(new EventHandler<ActionEvent>() {
+ 
+            @Override
+            public void handle(ActionEvent event) {
+                // localDB.remove
+            	// we need to add remove into localdb
+            	// how to updateleft in this class???
+            	// updateleft in the main use added list
+            	// we got problem here so for now don't update
+            	infoLbl.setText("ISSUE DELETED RESET THE PROGRAM FOR UPDATE");
+            	LocalDB.deleteIssueByID(rhIssue.getID());
+            }
+        });
+        // Add MenuItem to ContextMenu
+        contextMenu.getItems().addAll(item1);
+        // When user right-click issue preview
+        setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+ 
+            @Override
+            public void handle(ContextMenuEvent event) {
+ 
+                contextMenu.show(infoLbl, event.getScreenX(), event.getScreenY());
+            }
+        });
+        /*
+         * end of context menu code
+         */
 	}
 
 	public Issue getIssue() {
