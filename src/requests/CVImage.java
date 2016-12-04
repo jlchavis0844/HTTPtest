@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import org.apache.commons.lang.RandomStringUtils;
@@ -23,6 +27,9 @@ import model.Volume;
 
 public class CVImage {
 	private static BufferedImage img = null;
+	private static int cntr;
+	public static final int ISSUE = 0;
+	public static final int VOLUME = 1;
 
 	public static void addAllImages(Issue i) {
 
@@ -88,6 +95,7 @@ public class CVImage {
 				System.out.println(pre.executeUpdate());
 
 				JSONObject tJO = i.getFullObject();
+				tJO.remove(size);
 				tJO.put(size, "./Images/issue/" + name);
 				str = "UPDATE issue SET JSON = ? WHERE id = ? ";
 				pre = SQLconn.prepareStatement(str);
@@ -139,6 +147,7 @@ public class CVImage {
 			LocalDB.executeUpdate(str);
 
 			JSONObject jo = vol.getJSONObject();
+			jo.remove(size);
 			jo.append(size, file);
 			jo.remove("JSON");
 			jo.append("JSON", jo.toString());
@@ -173,13 +182,19 @@ public class CVImage {
 
 	public static BufferedImage getLocalVolumeImg(String id, String size) {
 		try {
-			Connection conn = DriverManager.getConnection("jdbc:sqlite:./DigLongBox.db");
-			Statement stat = conn.createStatement();
+			Connection myConn = DriverManager.getConnection("jdbc:sqlite:./DigLongBox.db");
+			Statement myStat = myConn.createStatement();
 			String colName = size.replace("_url", "");
 			String query = "SELECT " + colName + " FROM volume WHERE id = '" + id + "';";
-			ResultSet rs = stat.executeQuery(query);
+			ResultSet rs = LocalDB.executeQuery(query);
 			rs.next();
 			String path = rs.getString(1);
+			rs.close();
+			myStat.close();
+			myConn.close();
+			if(path.equals("") || path == null){
+				System.err.println("No image path found for " + id);
+			}
 			img = ImageIO.read(new File(path));
 		} catch (SQLException | IOException e) {
 			// TODO Auto-generated catch block
@@ -188,21 +203,82 @@ public class CVImage {
 		return img;
 
 	}
+	
 
 	public static BufferedImage getLocalIssueImg(String id, String size) {
+		Connection myConn = null;
+		Statement myStat = null;
+		ResultSet rs = null;
 		try {
-			Connection conn = DriverManager.getConnection("jdbc:sqlite:./DigLongBox.db");
-			Statement stat = conn.createStatement();
+			myConn = DriverManager.getConnection("jdbc:sqlite:./DigLongBox.db");
+			myStat = myConn.createStatement();
 			String colName = size.replace("_url", "");
 			String query = "SELECT " + colName + " FROM issue WHERE id = '" + id + "';";
-			ResultSet rs = stat.executeQuery(query);
+			rs = myStat.executeQuery(query);
 			rs.next();
 			String path = rs.getString(1);
 			img = ImageIO.read(new File(path));
 		} catch (SQLException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				myStat.close();
+				myConn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 		}
 		return img;
+	}
+	
+	public static int cleanAllLocalImgs(){
+		int retVal = 0;
+		try {
+			return (cleanLocalImgs(ISSUE) + cleanLocalImgs(VOLUME));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return retVal;
+	}
+	
+	/**
+	 * removes all non-valid images from the /images/volume or /images/issue
+	 * @param type- use either LocalDB or CVImage.ISSUE or VOLUME
+	 * @return how many files were deleted
+	 * @throws IOException - could not delete the file
+	 */
+	public static int cleanLocalImgs(int type) throws IOException{
+		String path;
+		if(type == CVImage.ISSUE) {
+			path = "./images/issue";
+		} else {
+			path = "./images/volume";
+		}
+		System.out.println("Starting with " + path);
+		try(Stream<Path> paths = Files.walk(Paths.get(path))){
+			paths.forEach(filePath -> {
+				if(Files.isRegularFile(filePath)){
+					//split should produce [ | |images|volume|hashName|png]
+					String hashName = filePath.toString().split("[\\.|\\\\]")[4];
+					if(!LocalDB.searchAllFields(hashName, type)){
+						System.out.println("Deleting " + filePath.toString());
+						try {
+							Files.delete(filePath);
+							System.out.println("finished");
+							cntr++;
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			});
+		}
+		return cntr;
 	}
 }

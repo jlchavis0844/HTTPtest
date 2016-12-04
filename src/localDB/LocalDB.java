@@ -88,8 +88,8 @@ public class LocalDB {
 	private static String url = "jdbc:sqlite:./DigLongBox.db";
 	private static Connection conn;
 	private static Statement stat;
-	public static int ISSUE = 0;
-	public static int VOLUME = 1;
+	public final static int ISSUE = 0;
+	public final static int VOLUME = 1;
 
 	/**
 	 * Inserts issue along with corresponding volume, if needed and fetches aand stores images
@@ -260,6 +260,12 @@ public class LocalDB {
 		return true;
 	}
 
+	/**
+	 * Checks to see if the given ID is in the data base for given object
+	 * @param id volume/issue id
+	 * @param type LocalDB.ISSUE or LocalDB.VOLUME
+	 * @return true or false
+	 */
 	public static boolean exists(String id, int type) {
 		int count = 0;
 		try {
@@ -404,7 +410,37 @@ public class LocalDB {
 		}
 		return null;
 	}
+	
+	/**
+	 * Searches all json fields of either volume or issue to see if value exists
+	 * @param key Term to search for
+	 * @param type VOLUME or ISSUE
+	 * @return true or false on whether it was found
+	 */
+	public static boolean searchAllFields(String key, int type) {
+		boolean retVal = false;
+		try {
+			conn = DriverManager.getConnection(url);
+			stat = conn.createStatement();
+			String table = (type == 0) ? "issue" : "volume";
+			String query = "SELECT COUNT(*) FROM " + table + " WHERE JSON LIKE ?;";
+			
+			PreparedStatement pre = conn.prepareStatement(query);
+			pre.setString(1,"%" + key + "%");
+			ResultSet rs = pre.executeQuery();
+			rs.next();
+			retVal = (rs.getInt(1) > 0);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return retVal;
+	}
 
+	/**
+	 * Builds and returns an unsorted list of issues
+	 * @return ArrayList<Issue>
+	 */
 	public static ArrayList<Issue> getAllIssues() {
 		ArrayList<Issue> iList = new ArrayList<Issue>();
 		try {
@@ -415,7 +451,6 @@ public class LocalDB {
 			PreparedStatement pre = conn.prepareStatement(sql);
 
 			ResultSet rs = pre.executeQuery();
-			ResultSetMetaData meta = rs.getMetaData();
 
 			String val = "";
 			JSONObject tObj = null;
@@ -440,6 +475,10 @@ public class LocalDB {
 		return iList;
 	}
 
+	/**
+	 * Returns an ArrayList<Volume> of all volumes in the local database
+	 * @return ArrayList<Volume>
+	 */
 	public static ArrayList<Volume> getAllVolumes() {
 		ArrayList<Volume> iList = new ArrayList<Volume>();
 		try {
@@ -743,33 +782,59 @@ public class LocalDB {
 		Collections.sort(volList, comparatorVolume);
 	}
 
+	/**
+	 * Function to delete the volume from the volume database and all related issues from the issue table
+	 * @param inputID - the id of the volume to be deleted 
+	 * @return boolean of whether all the actions succeded
+	 */
 	public static boolean deleteVolumeByID(String inputID) {
 
 		if (inputID.chars().allMatch(Character::isDigit)) {
 
 			try {
-				Connection c = DriverManager.getConnection(url);
-
-				String sql = "DELETE FROM VOLUME WHERE id = '" + inputID + "';";
-				stat = c.createStatement();
-				int count = stat.executeUpdate(sql);
+				conn = DriverManager.getConnection(url);
+				
+				String sql = "DELETE FROM VOLUME WHERE id = ?;";
+				PreparedStatement pre = conn.prepareStatement(sql);
+				pre.setString(1, inputID);
+				int count = pre.executeUpdate();
+				
 				System.out.println("Trying to delete: " + ((count == 1) ? "Worked" : "Failed"));
-//				PreparedStatement pre = conn.prepareStatement(sql);
-//				pre.setString(1, inputID);
-//
-//				pre.executeUpdate(sql);
 
-				if(count == 1){
-					return true;
-				} else return false;
+				//if the delete from the volume table fails, exit function with false value
+				if(count == 0){
+					return false;
+				}
+				
+				/**
+				 * lets try to delete all the issues for this volume from the issues table
+				 */
+				sql = "DELETE FROM issue WHERE VOLUME LIKE ?;";
+				pre=conn.prepareStatement(sql);
+				pre.setString(1, "%" + inputID + "%");
+				
+				count = pre.executeUpdate();
+				System.out.println("number of issues deleted: " + count);
+
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+				System.err.println("failed on volume delete attempt: " + inputID);
+				try {
+					System.err.println(stat.getWarnings());
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				e.printStackTrace();
 			}
 		}
 		return false;
 	}
 
+	/**
+	 * Removes this issue from the local database, will not remove from any gui items or update runtime lists
+	 * @param inputID - the id of the issue to delete
+	 * @return boolean of whether the sql call worked
+	 */
 	public static boolean deleteIssueByID(String inputID) {
 
 		if (inputID.chars().allMatch(Character::isDigit)) {
@@ -781,16 +846,20 @@ public class LocalDB {
 				String sql = "DELETE FROM issue WHERE id = ?;";
 				PreparedStatement pre = conn.prepareStatement(sql);
 				pre.setString(1, inputID);
-				pre.executeUpdate();
-				
-				return true;
+				if(pre.executeUpdate() == 0){
+					System.err.println("Failed to delete " + inputID);
+					return false;
+				} else {
+					System.out.println("Deleted " + inputID);
+					return true;
+				}
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+				System.err.println("SQLException trying to delete volume by id: " + inputID);
 				e.printStackTrace();
 			}
-			System.out.println("Deleted " + inputID);
+			
 		}
-		return true;
+		return false;
 	}
 
 	public static boolean deleteVolumeByName(String inputName) {

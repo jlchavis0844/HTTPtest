@@ -2,6 +2,7 @@ package scenes;
 
 import java.awt.image.BufferedImage;
 
+import application.Main;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -62,6 +63,7 @@ public class IssuePreview extends HBox {
             	// we got problem here so for now don't update
             	infoLbl.setText("ISSUE DELETED RESET THE PROGRAM FOR UPDATE");
             	LocalDB.deleteIssueByID(rhIssue.getID());
+            	Main.afterIssueUpdate(issue);
             }
         });
         // Add MenuItem to ContextMenu
@@ -71,7 +73,6 @@ public class IssuePreview extends HBox {
  
             @Override
             public void handle(ContextMenuEvent event) {
- 
                 contextMenu.show(infoLbl, event.getScreenX(), event.getScreenY());
             }
         });

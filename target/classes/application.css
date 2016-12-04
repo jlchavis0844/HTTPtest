@@ -1,0 +1,266 @@
+/*
+ * To use in same package use:
+ * scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+ * 
+ * To use from a different package use:
+ * scene.getStylesheets().add(getClass().getResource("../application/application.css").toExternalForm());
+ */
+
+
+.root{
+	/* Main background color */
+    -fx-background-color: #2B2B2B;
+    /* Text color */
+    -fx-text-fill:#BBBBBB;
+
+
+    /* Used for the inside of text boxes, password boxes, lists, trees, and tables.*/  
+    -fx-control-inner-background: #3C3F41;
+
+    /* The color to use in ListView/TreeView/TableView to indicate hover. */
+    -fx-cell-hover-color: #0D293E;
+
+    /* The color of the font */
+    -fx-text-inner-color: #DDDDDD;
+    
+    /* The opacity level to use for the "disabled" class.*/
+    -fx-disabled-opacity: 0.5;
+}
+
+
+/**************************
+           Label
+Default label look
+***************************/
+.label{
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-font-size: 12px;
+    -fx-alignment: center-left;
+    -fx-font-family: "Arial";
+}
+
+/*.tab-header-background {
+    -fx-background-color: #2B2B2B ;
+}
+.tab{
+	-fx-background-color: Grey;
+	-fx-border-color: #6E6E6E;
+	-fx-text-fill: white;
+}*/
+.Tab {
+-fx-background-color: Grey;
+/*-fx-font-size: 16pt;*/
+-fx-border-color:Grey;
+-fx-border-width:1;
+-fx-border-width:5px;
+}
+
+.Tab .tab-label {
+    -fx-background-color: Grey;
+    -fx-alignment: CENTER;
+    -fx-text-fill: -title-text-fill-color;
+
+}
+
+.Tab:selected .tab-label {
+    -fx-background-color: Grey;
+    -fx-alignment: CENTER;
+    -fx-text-fill: -default-highlight;          
+}
+
+.tab-content-area {
+    -fx-background-color: Grey;
+}
+
+.tab-pane *.tab-header-background {
+    -fx-background-color: transparent;
+    -fx-border-width:1;
+    -fx-border-color: Grey;
+}
+
+
+.Tab:selected {
+    -fx-background-color: Grey;
+    -fx-border-width:1;
+    -fx-border-color: Grey;
+}
+/**************************
+           Button
+Default button theme
+***************************/
+
+.button{
+    -fx-background-color: linear-gradient(#505356, #393B3D);
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-font-size: 12px;
+    -fx-alignment: center-left;
+    -fx-font-family: "Arial";
+    -fx-background-radius: 5;
+}
+
+.button:hover{
+    -fx-background-color: linear-gradient(#53585A, #424749);
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-font-size: 12px;
+    -fx-alignment: center-left;
+    -fx-font-family: "Arial";
+    -fx-background-radius: 5;
+}
+
+.button:armed {
+    -fx-background-color: linear-gradient(#4A6BA8, #415270);
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-font-size: 12px;
+    -fx-alignment: center-left;
+    -fx-font-family: "Arial";
+    -fx-background-radius: 5;
+}
+
+.button:disabled {
+    -fx-opacity: -fx-disabled-opacity;
+}
+
+.radio-button {
+/*-fx-font-family: "Arial";
+-fx-font-size: 11;
+    -fx-text-fill: rgb(255, 255, 255, 0.4);
+-fx-text-fill: lightgoldenrodyellow;
+    -fx-effect: dropshadow(one-pass-box , rgba(0, 0, 0, 0.6), 0, 0.0 , 0 , 1 );
+-fx-border-width: 0px;*/
+    -fx-background-color: #49454A;
+    -fx-text-fill:  -fx-text-inner-color;
+    -fx-prompt-text-fill: #999999;
+    -fx-background-radius: 100;
+}
+
+/**************************
+           Hyperlink
+Links to Comic Vine
+***************************/
+
+.hyperlink {
+    -fx-cursor: hand;
+    -fx-content-display: LEFT;
+    -fx-text-fill: #009999;
+    -fx-font-family: "Arial";
+}
+
+.hyperlink:hover {
+    -fx-underline: true;
+}
+
+/********************************************
+          Text Field
+Searching fields
+*********************************************/
+.text-field{
+    -fx-background-color: #49454A;
+    -fx-text-fill:  -fx-text-inner-color;
+    -fx-prompt-text-fill: #999999;
+    -fx-background-radius: 100;
+}
+
+
+/********************************************
+          ScrollPane
+Theme for the scroll pane
+*********************************************/
+.scroll-pane {
+	-fx-background-color: -fx-control-inner-background;
+	-fx-border-color: #6E6E6E;
+	
+}
+
+.scroll-pane > .corner {
+	-fx-background-color: -fx-control-inner-background;
+}
+
+
+
+/********************************************
+          Scroll Bar
+Theme of all scroll bars
+*********************************************/
+.scroll-bar{
+	
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: -fx-control-inner-background;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: -fx-control-inner-background;
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #5C5C5C;
+    -fx-background-radius: 0.5em; /* makes sure this remains circular */
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #5C5C5C;
+    -fx-background-radius: 0.5em; /* makes sure this remains circular */
+}
+
+.scroll-bar > .thumb:hover {
+	-fx-background-color: #6E6E6E;
+}
+
+
+
+
+/********************************************
+          HTML
+Theme of all scroll bars
+*********************************************/
+
+body {
+    background-color: #3C3F41;
+    font-family: Arial, Helvetica, san-serif;
+	color: #DDDDDD;
+}
+
+
+/********************************************
+           Tree View | Tree Cell
+The collection LIST (not tree)
+*********************************************/
+.tree-view {
+    -fx-background-color: -fx-control-inner-background;
+}
+
+.tree-cell {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+.tree-cell:filled:hover {
+    -fx-background-color: #2B2B2B;
+    -fx-text-fill: white;
+}
+
+.tree-cell:filled:selected {
+    -fx-background-color: #2B2B2B;
+    -fx-text-fill: white;
+}
+
+.tree-cell:filled:sub-tree-item {
+    -fx-padding: 0.25em ;
+}
+
+/*.tree-cell:expanded {
+	-fx-background-color: #2B2B2B;
+}*/
+
+/*******************************************************************/
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: linear-gradient(#939393 0%, #3d3d3d 100%);
+    -fx-text-fill: white;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #7a7a7a;
+    -fx-text-fill: white;
+}

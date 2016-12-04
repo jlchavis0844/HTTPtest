@@ -8,6 +8,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import localDB.LocalDB;
 import model.Issue;
+import model.Volume;
 import scenes.IssuePreview;
 import scenes.VolumePreview;
 import javafx.application.Platform;
@@ -45,7 +46,7 @@ public class VolumeCell extends TreeItem {
 	 * @param allIssues
 	 *            - ArrayList of all the issues
 	 */
-	public synchronized boolean setIssues(ArrayList<Issue> allIssues) {
+	public boolean setIssues(ArrayList<Issue> allIssues) {
 
 		ArrayList<Issue> volumeIssues = new ArrayList<>();
 		for(Issue i : allIssues){
@@ -58,6 +59,8 @@ public class VolumeCell extends TreeItem {
 		LocalDB.sortIssuesByIssueNum(volumeIssues, false);//sort the issues
 		
 		for(Issue i: volumeIssues){//add issues to the volume preview in the sorted order
+			//System.out.println("trying: " + i.getVolumeName() + " #" + i.getIssueNum());
+
 			getChildren().add(new TreeItem<IssuePreview>(new IssuePreview(i)));
 		}
 		filled = true;
@@ -75,4 +78,17 @@ public class VolumeCell extends TreeItem {
 	public String getVolumeName(){
 		return vp.getVolName();
 	}
+	
+	public String getVolumeID(){
+		return vp.getVolume().getID();
+	}
+	
+	public Volume getVolume(){
+		return vp.getVolume();
+	}
+	
+	public VolumePreview getVolPreview(){
+		return vp;
+	}
+
 }

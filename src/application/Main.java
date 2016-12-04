@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONException;
+
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -35,7 +34,6 @@ import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.*;
 
 /**
@@ -44,8 +42,8 @@ import javafx.scene.layout.*;
  * @author jlchavis
  *
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class Main extends Application {
-	@SuppressWarnings("rawtypes")
 	private Stage window;// main stage
 	private BorderPane layout;// layout for window
 	private static ArrayList<Issue> added; // list to hold added issues from
@@ -62,15 +60,16 @@ public class Main extends Application {
 	private Button addButton; // launches addComic scene
 	private static TreeView treeView; // holds VolumeCell-->volume preview
 										// -->issues review
-	private static TreeView srchTree ;
+	
+	private static TreeView srchTree;
 
 	/**
 	 * launched from main(), starts main scene/ui
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		scenes.LogIn login = new LogIn();// launch login scene
+		new LogIn();// launch login scene
 
 		window = primaryStage;// set as primary stage
 		window.setTitle("Digital Long Box");// set title
@@ -108,7 +107,10 @@ public class Main extends Application {
 		}
 		System.out.println("time to load all volumes " + (System.currentTimeMillis() - start));
 
-		treeView = new TreeView<VolumePreview>(buildRoot("Volumes", volPreviews));// tree for  volume cells
+		treeView = new TreeView<VolumePreview>(buildRoot("Volumes", volPreviews));// tree
+																					// for
+																					// volume
+																					// cells
 		treeView.setPrefWidth(500);
 		treeView.setPrefHeight(950);
 
@@ -121,22 +123,26 @@ public class Main extends Application {
 
 			@Override
 			public void changed(ObservableValue<? extends TreeItem> observable, TreeItem oldValue, TreeItem newValue) {
-				if(newValue instanceof VolumeCell){
-					if(!((VolumeCell) newValue).isFilled())
+				if (newValue instanceof VolumeCell) {
+					if (!((VolumeCell) newValue).isFilled())
 						((VolumeCell) newValue).setIssues(allIssues);
 				} else {
 					TreeItem<IssuePreview> ti = (TreeItem<IssuePreview>) treeView.getSelectionModel().getSelectedItem();
-					if(ti != null){	
-						if(ti.getValue() != null){
+					if (ti != null) {
+						if (ti.getValue() != null && ti.getValue() instanceof IssuePreview) {
 							Issue issue = ti.getValue().getIssue();
 							layout.setRight(new DetailView(issue));
-						} else System.out.println("something went wrong loading issue");
-					} else System.out.println("something went wrong loading issue");
+						} else
+							System.out.println("Issue preview is null");
+					} else
+						System.out.println("TreeItem is null");
 				}
-				boolean expanded = ((TreeItem) treeView.getSelectionModel().getSelectedItem()).isExpanded();
-				newValue.setExpanded(!expanded);
+				
+				if(treeView.getSelectionModel() != null && treeView.getSelectionModel().getSelectedItem() != null){
+					boolean expanded = ((TreeItem) treeView.getSelectionModel().getSelectedItem()).isExpanded();
+					newValue.setExpanded(!expanded);
+				}
 			}
-
 		});
 
 		/**
@@ -193,7 +199,7 @@ public class Main extends Application {
 
 		tabs.getTabs().addAll(allIssTab, srchTab);
 		leftSide.getChildren().add(tabs);
-		//leftSide.setStyle("-fx-border-color: grey");
+		// leftSide.setStyle("-fx-border-color: grey");
 
 		srchTree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem>() {
 			@Override
@@ -214,12 +220,12 @@ public class Main extends Application {
 		leftSearch.setOnAction(e -> {
 			String srchText = srchTxt.getText();
 			String selected = "";
-			if(!(comboBox.getSelectionModel().getSelectedItem() == null)) {
+			if (!(comboBox.getSelectionModel().getSelectedItem() == null)) {
 				selected = comboBox.getSelectionModel().getSelectedItem().toString();
 			}
-			
+
 			if (!srchText.equals("") && !selected.equals(comboBox.getPromptText())) {
-				switch(comboBox.getSelectionModel().getSelectedIndex()){
+				switch (comboBox.getSelectionModel().getSelectedIndex()) {
 				case 0:
 					userSearch("JSON", srchText);
 					break;
@@ -249,7 +255,8 @@ public class Main extends Application {
 		window.setMaximized(true);
 		Scene scene = new Scene(layout, 1900, 1050);
 		System.out.println(getClass().getResource("../application.css"));
-		//System.out.println("applying " + getClass().getResource("../application.css").toExternalForm());
+		// System.out.println("applying " +
+		// getClass().getResource("../application.css").toExternalForm());
 		String style = getClass().getResource("../application.css").toExternalForm();
 		scene.getStylesheets().add(style);
 		window.setScene(scene);
@@ -262,14 +269,23 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-
+		// ArrayList<Volume> allVols = LocalDB.getAllVolumes();
+		// allVols.forEach(vol -> {
+		// CVImage.addVolumeImg(vol, "thumb");
+		// CVImage.addVolumeImg(vol, "medium");
+		//
+		// });
+		// System.out.println(CVrequest.getApiKey());
 		launch(args);
+		System.out.println("run stuff here");
 		System.exit(0);
 
 	}
 
 	public static void updateLeft() {
-		new IssueLoadScreen(added, allIssues, volPreviews);
+		if(added.size() != 0){
+			new IssueLoadScreen(added, allIssues, volPreviews);
+		}
 		treeView.setRoot(buildRoot("Volumes", volPreviews));
 		added.clear();
 		backgroundLoadIssues();
@@ -300,18 +316,19 @@ public class Main extends Application {
 		for (Object obj : treeView.getRoot().getChildren()) {
 			executorService.execute(new Runnable() {
 				public void run() {
-					Platform.runLater(new Runnable() {
-						public void run() {
-							boolean hasIssues = ((VolumeCell) obj).setIssues(allIssues);
-							if(!hasIssues){
-								System.out.println("Warning: No issues found for " + ((VolumeCell) obj).getVolumeName());
-							}
-						}
-					});
+					//// Platform.runLater(new Runnable() {
+					// public void run() {
+					boolean hasIssues = ((VolumeCell) obj).setIssues(allIssues);
+					if (!hasIssues) {
+						System.out.println("Warning: No issues found for " + ((VolumeCell) obj).getVolumeName());
+					}
+					// }
+					// });
 				}
 			});
 		}
-		executorService.shutdown();
+		// executorService.shutdown();
+
 	}
 
 	/**
@@ -319,34 +336,25 @@ public class Main extends Application {
 	 */
 	public static void backgroundLoadVols() {
 		System.out.println("Starting background load of volumes");
-//		ExecutorService executorService = Executors.newFixedThreadPool(10);
 		int volNum = allVols.size();
-		AtomicInteger counter = new AtomicInteger(0);
 
 		for (Object obj : treeView.getRoot().getChildren()) {
-//			executorService.execute(new Runnable() {
-//				public void run() {
-					// System.out.println(counter.incrementAndGet() + " ?= " +
-					// volNum);
-					((VolumePreview) ((VolumeCell) obj).getValue()).setImage();
-					System.out.println("done loading " + ((VolumePreview) ((VolumeCell) obj).getValue()).getVolName());
-//					counter.incrementAndGet();
-//				}
-//			});
+			((VolumePreview) ((VolumeCell) obj).getValue()).setImage();
+			System.out.println("done loading " + ((VolumePreview) ((VolumeCell) obj).getValue()).getVolName());
 		}
-//		executorService.shutdown();
-//
-//		while (counter.get() != volNum) {}// wait here to load volumes
 		backgroundLoadIssues();// start loading issues
 	}
-	
+
 	/**
-	 * Runs search on the user's collection 
-	 * @param field which field is being searched
-	 * @param srchText what we are searching for
+	 * Runs search on the user's collection
+	 * 
+	 * @param field
+	 *            which field is being searched
+	 * @param srchText
+	 *            what we are searching for
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void userSearch(String field, String srchText){
+	public static void userSearch(String field, String srchText) {
 		try {
 			ArrayList<Issue> results = LocalDB.searchIssue(field, "%" + srchText + "%", "LIKE");
 			LocalDB.sortIssuesByCoverDate(results, true);
@@ -364,5 +372,57 @@ public class Main extends Application {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+	}
+	
+	/**
+	 * This function will rebuild the VolumeCell -> VolumePreview -> Volume -> Issue(s) 
+	 * preview chain by removing the given issue and then recreating the chain
+	 * @param issue - this isssue that should be removed
+	 */
+	@SuppressWarnings({"unchecked" , "rawtypes"})
+	public static void afterIssueUpdate(Issue issue) {
+		allIssues.remove(issue);
+		TreeItem tempRoot = treeView.getRoot();
+		VolumeCell tempCell = null;
+		//VolumePreview tempVP = null;
+		ObservableList oldList = tempRoot.getChildren();
+		
+		oldList.forEach(vc -> {
+			if(((VolumeCell)vc).getVolumeID().equals(issue.getVolumeID())){
+				VolumePreview tempVP = new VolumePreview(((VolumeCell)vc).getVolume(), allIssues);
+				vc = new VolumeCell(tempVP);
+				((VolumeCell)vc).setIssues(allIssues);
+			}
+		});
+		
+		treeView.setRoot(buildRoot("Volumes", volPreviews));
+		backgroundLoadIssues();
+	}
+	
+	/**
+	 * This function will rebuild the VolumeCell -> VolumePreview -> Volume -> Issue(s) 
+	 * preview chain after removing the given volume and then recreating the chain
+	 * @param vol - this volume that should be removed
+	 */
+	@SuppressWarnings({"unchecked" , "rawtypes"})
+	public static void afterVolumeUpdate(Volume vol) {
+		allVols.remove(vol);
+		VolumePreview deleteMe = null;
+		
+		TreeItem tempRoot = treeView.getRoot();
+		VolumeCell tempCell = null;
+		//VolumePreview tempVP = null;
+		ObservableList oldList = tempRoot.getChildren();
+		for(int i = 0; i< oldList.size(); i++){
+			tempCell = (VolumeCell) oldList.get(i);
+			if(tempCell.getVolumeID().equals(vol.getID())){
+				volPreviews.remove(tempCell.getVolPreview());
+				oldList.remove(tempCell);
+				break;
+			}
+		}
+		
+		treeView.setRoot(buildRoot("Volumes", volPreviews));
+		backgroundLoadIssues();
 	}
 }

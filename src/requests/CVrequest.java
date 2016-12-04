@@ -144,6 +144,10 @@ public class CVrequest {
 		}
 		return null;
 	}
+	
+	private static String loadApiKey(){
+		return "test";
+	}
 
 	/**
 	 * Easy volume search, returns ArrayList of the volumes

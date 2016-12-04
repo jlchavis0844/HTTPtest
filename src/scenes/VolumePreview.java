@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import application.Main;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -34,9 +35,6 @@ public class VolumePreview extends HBox{
 
 		vol = rhVol;
 		long start = System.currentTimeMillis();
-		//		BufferedImage bi = vol.getImage("thumb");
-		//		Image image = SwingFXUtils.toFXImage(bi, null);
-		//		thumb = new ImageView(image);
 		thumb = new ImageView();
 		//System.out.println("Image fetch took :" + (System.currentTimeMillis() - start));
 		thumb.setFitHeight(50);
@@ -71,6 +69,7 @@ public class VolumePreview extends HBox{
             	// we got problem here so for now don't update
             	infoLbl.setText("VOLUME DELETED RESET THE PROGRAM FOR UPDATE");
             	LocalDB.deleteVolumeByID(rhVol.getID());
+            	Main.afterVolumeUpdate(vol);
             }
         });
         // Add MenuItem to ContextMenu

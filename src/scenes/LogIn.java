@@ -14,6 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import requests.CVImage;
 import requests.SQLQuery;
 
 public class LogIn {
@@ -28,6 +29,7 @@ public class LogIn {
 	private String[] info;
 
 	public LogIn() throws IOException {
+		//CVImage.cleanAllLocalImgs();// clean up images on start up
 		Stage stage = new Stage();
 
 		stage.setTitle("Welcome | Login or Sign Up");
