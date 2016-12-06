@@ -1,6 +1,9 @@
 package requests;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -173,8 +176,9 @@ public class CVrequest {
 					.queryString("format", "json").queryString("limit", "100").asJson().getBody();
 
 			int resNum = response.getObject().getInt("number_of_total_results");
-			System.out.println("found " + resNum);
 			int pages = (resNum / 100) + 1;
+			System.out.println("found " + resNum + " in " + pages);
+			
 			JSONObject jo = response.getObject();
 			Vector<JSONArray> allResults = new Vector<>();
 			allResults.addElement(jo.getJSONArray("results"));
@@ -259,8 +263,8 @@ public class CVrequest {
 					.queryString("format", "json").queryString("limit", "100").asJson().getBody();
 
 			int resNum = response.getObject().getInt("number_of_total_results");
-			System.out.println("found " + resNum);
 			int pages = (resNum / 100) + 1;
+			System.out.println("found " + resNum + " in " + pages + " pages");
 			JSONObject jo = response.getObject();
 			Vector<JSONArray> allResults = new Vector<>();
 			allResults.addElement(jo.getJSONArray("results"));
@@ -300,20 +304,23 @@ public class CVrequest {
 			while (gets.get() < pages) {
 			}
 
+			HashMap<String, Volume> retVols = new HashMap<String, Volume>();
+			
 			JSONObject tempJO;
 			String pubName = "";
 			for (JSONArray j : allResults) {
-				for (int k = 0; k < j.length() && vols.size() < 30; k++) {
+				for (int k = 0; k < j.length() && retVols.size() < 30; k++) {
 					tempJO = j.getJSONObject(k);
+					System.out.println("looking at " + tempJO.getInt("id"));
 					if (!tempJO.isNull("publisher") && !tempJO.isNull("name")) {
 						pubName = tempJO.getJSONObject("publisher").get("name").toString();
 						if (pubName.contains(publisher)) {
-							vols.add(new Volume(tempJO));
+							retVols.put(tempJO.get("id").toString(), new Volume(tempJO));
 						}
 					}
 				}
 			}
-
+			vols.addAll(retVols.values());
 			System.out.println("returning " + vols.size());
 			LocalDB.sortVolumesByStartCountOfIssues(vols, false);
 			return vols;

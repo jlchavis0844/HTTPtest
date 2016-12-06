@@ -168,4 +168,12 @@ public class Volume {
 		} else
 			return false;
 	}
+	
+	@Override
+	public boolean equals(Object o){
+		if(!(o instanceof Volume)){
+			return false;
+		}
+		return (((Volume)o).getID().equals(id));
+	}
 }

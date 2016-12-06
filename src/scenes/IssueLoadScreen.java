@@ -3,10 +3,15 @@ package scenes;
 import java.util.ArrayList;
 import java.util.List;
 
+import application.Main;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -26,8 +31,27 @@ import model.Issue;
  *  cancel work, back and newadd doesn't and i don't know why.
  */
 public class IssueLoadScreen {
+	private ArrayList<Issue> willAdd;
+	private ArrayList<Issue> addedCopy;
+	private ArrayList<IssuePreview> addList;
+	private List<Issue> added;
+	private List<Issue> allIssues;
+	private List<VolumePreview> volPreviews;
+	private ProgressBar pb;
+	private double progress = 0.0;
+	private double cntr = 0.0;
+	private HBox bottom;
+	private Button back;
+	private Button newAdd;
+	private Button cancel;
+	private Button go;
 
-	public IssueLoadScreen(List<Issue> added, List<Issue> allIssues, List<VolumePreview> volPreviews) {
+	public IssueLoadScreen(List<Issue> a, List<Issue> iList, List<VolumePreview> v) {
+		pb = new ProgressBar(0.0);
+		added = a;
+		allIssues = iList;
+		volPreviews = v;
+
 		Stage stage = new Stage();
 		stage.initModality(Modality.APPLICATION_MODAL);
 
@@ -35,115 +59,144 @@ public class IssueLoadScreen {
 		layout.setPadding(new Insets(20));
 		stage.setTitle("Progress Controls");
 		Label label = new Label("loading new comics...");
-		VBox myVBox = new VBox(10);
+		pb.setScaleShape(true);
+		VBox myVBox = new VBox();
+		myVBox.setPadding(new Insets(20, 10, 20, 10));
 
-		ArrayList<IssuePreview> addList = new ArrayList<>();
-		ArrayList<Issue> addedCopy = new ArrayList<>(added);
-		ArrayList<Issue> willAdd = new ArrayList<Issue>();
+		addList = new ArrayList<>();
+		addedCopy = new ArrayList<>(added);
+		willAdd = new ArrayList<Issue>();
 		IssuePreview ip = null;
-		
-		for(Issue i: addedCopy){
+
+		for (Issue i : addedCopy) {
 			ip = new IssuePreview(i);
-			if(LocalDB.exists(i.getID(), LocalDB.ISSUE)){
+			if (LocalDB.exists(i.getID(), LocalDB.ISSUE)) {
 				ip.setAddInfo("Already in collection");
 				added.remove(i);
 			}
 			// the list of issue preview for display to the user
 			addList.add(ip);
-			
-			//the list of issue that we will actually add after operation is over
+
+			// the list of issue that we will actually add after operation is
+			// over
 			willAdd.add(i);
 		}
-		
+
 		// now add the arraylist of HBox into the VBox
 		myVBox.getChildren().addAll(addList);
-		//layout.getChildren().add(myVBox);
+		// layout.getChildren().add(myVBox);
 		// show the VBox on layout
-		
+
 		layout.setCenter(myVBox);
-		layout.setTop(label);
-		
-		Button back = new Button("Back to adding comics");
-		Button newAdd = new Button("Start add over");
-		Button cancel = new Button("Stop and go back to collection");
-		Button go = new Button("Continue");
-		
+		layout.setTop(pb);
+		pb.setPrefWidth(layout.getPrefWidth()-50);
+		layout.setAlignment(pb, Pos.CENTER);
+
+		back = new Button("Back to adding comics");
+		newAdd = new Button("Start add over");
+		cancel = new Button("Stop and go back to collection");
+		go = new Button("Continue");
+
 		back.setOnAction(e -> {
 			stage.close();
 			new AddComic(added);
 		});
-		
+
 		newAdd.setOnAction(e -> {
 			stage.close();
 			added.clear();
 			new AddComic(added);
 		});
-		
+
 		// user cancel what they selected
 		cancel.setOnAction(e -> {
 			stage.close();
 			added.clear();
 		});
-		
+
 		go.setOnAction(e -> {
 			// add the issue to DB
 			willAdd.forEach(i -> {
 				System.out.println(i);
 			});
-			for(Issue i: willAdd){
+			bottom.getChildren().clear();
+			addIssues(stage);
 
-				LocalDB.addIssue(i);
-				allIssues.add(i);
-				int foundIndex = -1;
-				for(int j = 0; j < volPreviews.size(); j++){
-					if(volPreviews.get(j).getVolName().equals(i.getVolumeName())){
-						foundIndex = j;
-						volPreviews.get(j).update(allIssues);
-					}
-				}
-
-				if(foundIndex == -1){
-					volPreviews.add(new VolumePreview(i.getVolume(), allIssues));
-				}
-				
-				for(VolumePreview pv: volPreviews){
-					pv.setImage();
-				}
+			// then close the stage
+			if (cntr == willAdd.size()) {
+				System.out.println("++++++++++++++++++++++++++++++++closing load screen");
+				stage.close();
+			} else {
+				System.out.println("---------------------------------not there yes\t");
 			}
-			//then close the stage
-			stage.close();
 		});
 
-		// if user close the stage and ignore the continue button we still add what need to be add
-		stage.setOnCloseRequest(e ->{
-			for(Issue i: willAdd){
-
-				LocalDB.addIssue(i);
-				allIssues.add(i);
-				int foundIndex = -1;
-				for(int j = 0; j < volPreviews.size(); j++){
-					if(volPreviews.get(j).getVolName().equals(i.getVolumeName())){
-						foundIndex = j;
-						volPreviews.get(j).update(allIssues);
-					}
-				}
-
-				if(foundIndex == -1){
-					volPreviews.add(new VolumePreview(i.getVolume(), allIssues));
-				}
-				for(VolumePreview pv: volPreviews){
-					pv.setImage();
-				}
-
-			}		
+		// if user close the stage and ignore the continue button we still add
+		// what need to be add
+		stage.setOnCloseRequest(e -> {
+			addIssues(stage);
 		});
-		
-		HBox bottom = new HBox(5);
+
+		bottom = new HBox(5);
 		bottom.getChildren().addAll(back, newAdd, cancel, go);
 		layout.setBottom(bottom);
 		Scene scene = new Scene(layout);
+		String style = getClass().getResource("../application.css").toExternalForm();
+		scene.getStylesheets().add(style);
 		stage.setScene(scene);
 		stage.showAndWait();
 	}
-	
+
+	public void addIssues(Stage stage) {
+		Task task = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				for (Issue i : willAdd) {
+
+					LocalDB.addIssue(i);
+					allIssues.add(i);
+					int foundIndex = -1;
+					for (int j = 0; j < volPreviews.size(); j++) {
+						if (volPreviews.get(j).getVolName().equals(i.getVolumeName())) {
+							foundIndex = j;
+							volPreviews.get(j).update(allIssues);
+						}
+					}
+
+					if (foundIndex == -1) {
+						volPreviews.add(new VolumePreview(i.getVolume(), allIssues));
+					}
+
+					for (VolumePreview pv : volPreviews) {
+						pv.setImage();
+					}
+					cntr++;
+					progress = cntr / willAdd.size();
+					System.out.println(progress);
+					Platform.runLater(() -> {
+						pb.setProgress(progress);
+
+					});
+				}
+
+				if (cntr == willAdd.size()) {
+					System.out.println("Added:" + cntr);
+					Platform.runLater(() -> {
+						cancel.fire();
+						// cancel.setText("Done loading, click to continue");
+						// bottom.getChildren().add(cancel);
+						Main.updateCollection();
+						// stage.close();
+					});
+				}
+				return null;
+			}
+		};
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
+
+	}
+
 }

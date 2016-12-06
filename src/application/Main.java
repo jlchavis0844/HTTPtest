@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import localDB.LocalDB;
 import model.Issue;
 import model.Volume;
+import requests.CVImage;
 import scenes.AddComic;
 import scenes.DetailView;
 import scenes.IssueLoadScreen;
@@ -60,13 +61,11 @@ public class Main extends Application {
 	private Button addButton; // launches addComic scene
 	private static TreeView treeView; // holds VolumeCell-->volume preview
 										// -->issues review
-	
 	private static TreeView srchTree;
 
 	/**
 	 * launched from main(), starts main scene/ui
 	 */
-	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		new LogIn();// launch login scene
@@ -76,7 +75,6 @@ public class Main extends Application {
 		// window.initStyle(StageStyle.TRANSPARENT);
 
 		layout = new BorderPane();// main scene is border pane
-
 		added = new ArrayList<Issue>();// for addComics scene
 
 		System.out.println("getting all issues");
@@ -107,13 +105,9 @@ public class Main extends Application {
 		}
 		System.out.println("time to load all volumes " + (System.currentTimeMillis() - start));
 
-		treeView = new TreeView<VolumePreview>(buildRoot("Volumes", volPreviews));// tree
-																					// for
-																					// volume
-																					// cells
-		treeView.setPrefWidth(500);
+		treeView = new TreeView<VolumePreview>(buildRoot("Volumes"));
 		treeView.setPrefHeight(950);
-
+		treeView.setScaleShape(true);
 		/**
 		 * Click listener to expand and show issues checks if clicking on volume
 		 * preview or issue nothing is volume preview, detail view if issue
@@ -160,7 +154,7 @@ public class Main extends Application {
 		srchTxt.setPrefWidth(200);
 		srchTxt.setPromptText("Enter Search Term");
 		ObservableList<String> options = FXCollections.observableArrayList("All Fields", "Story Arc", "Characters",
-				"People", "Publisher");
+				"People", "Issue Name");
 		ComboBox comboBox = new ComboBox(options);
 		comboBox.setPromptText("Fields to be Searched");
 		issHeader.getChildren().add(srchTxt);
@@ -232,6 +226,15 @@ public class Main extends Application {
 				case 1:
 					userSearch("story_arc_credits", srchText);
 					break;
+				case 2:
+					userSearch("character_credits", srchText);
+					break;
+				case 3:
+					userSearch("person_credits", srchText);
+					break;
+				case 4:
+					userSearch("name", srchText);
+					break;
 				default:
 					System.out.println("Didn't click all");
 					break;
@@ -253,7 +256,8 @@ public class Main extends Application {
 				updateLeft();
 		});
 		window.setMaximized(true);
-		Scene scene = new Scene(layout, 1900, 1050);
+		//Scene scene = new Scene(layout, 1900, 1050);
+		Scene scene = new Scene(layout, 1280, 720);
 		System.out.println(getClass().getResource("../application.css"));
 		// System.out.println("applying " +
 		// getClass().getResource("../application.css").toExternalForm());
@@ -277,7 +281,7 @@ public class Main extends Application {
 		// });
 		// System.out.println(CVrequest.getApiKey());
 		launch(args);
-		System.out.println("run stuff here");
+		CVImage.cleanAllLocalImgs();
 		System.exit(0);
 
 	}
@@ -286,22 +290,25 @@ public class Main extends Application {
 		if(added.size() != 0){
 			new IssueLoadScreen(added, allIssues, volPreviews);
 		}
-		treeView.setRoot(buildRoot("Volumes", volPreviews));
+		treeView.setRoot(buildRoot("Volumes"));
 		added.clear();
 		backgroundLoadIssues();
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static TreeItem buildRoot(String title, List<VolumePreview> content) {
+	public static TreeItem buildRoot(String title) {
 		TreeItem root = new TreeItem<VolumePreview>();
 
 		root.setValue(title);
 		root.setExpanded(true);
+		System.out.println("loading the following volumes: ");
+		LocalDB.sortVolumePreviews(volPreviews, true);
 		for (VolumePreview vp : volPreviews) {
 			// vp.update(allIssues);
 
 			TreeItem temp = new VolumeCell(vp);
 			root.getChildren().add(temp);
+			System.out.println("\tadded: " + vp.getVolName() + ": " + vp.getVolume().getID());
 		}
 		return root;
 	}
@@ -395,7 +402,7 @@ public class Main extends Application {
 			}
 		});
 		
-		treeView.setRoot(buildRoot("Volumes", volPreviews));
+		treeView.setRoot(buildRoot("Volumes"));
 		backgroundLoadIssues();
 	}
 	
@@ -422,7 +429,12 @@ public class Main extends Application {
 			}
 		}
 		
-		treeView.setRoot(buildRoot("Volumes", volPreviews));
+		treeView.setRoot(buildRoot("Volumes"));
+		backgroundLoadIssues();
+	}
+	
+	public static void updateCollection() {
+		treeView.setRoot(buildRoot("Volumes"));
 		backgroundLoadIssues();
 	}
 }

@@ -2,16 +2,20 @@ package scenes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import application.Main;
 import model.*;
 import requests.CVrequest;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -36,8 +40,11 @@ public class AddComic {
 	private ListView<IssueResult> issueList;
 	private List<Issue> addList;
 	private Stage window;
+	private final ProgressBar pb;
+	private double added;
 
 	public AddComic(List<Issue> added) {
+		pb = new ProgressBar(0.0);
 		addList = added;
 		window = new Stage();
 		window.setTitle("Add Comics!");
@@ -105,7 +112,6 @@ public class AddComic {
 		addButton.setDisable(true);
 		backButton.setDisable(true);
 		removeButton.setDisable(true);
-		deleteButton.setDisable(true);
 
 		addButton.setOnAction(e -> {
 			Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
@@ -135,27 +141,8 @@ public class AddComic {
 			scPane.setContent(list);
 			backButton.setDisable(true);
 			removeButton.setDisable(true);
-			deleteButton.setDisable(true);
 			list.getSelectionModel().clearAndSelect(-1);
 			backButton.fire();
-		});
-
-		// get the issue that user selected
-		// loop through the addList and add all issue to tempList
-		// except the user selected issue.
-		deleteButton.setOnAction(e -> {
-			Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
-			ArrayList<Issue> tempList = new ArrayList<Issue>();
-			for (int i = 0; i < addList.size(); i++) {
-				if (iSel.equals(addList.get(i))) {
-					// we skip because this item should not be in new list
-					continue;
-				}
-				tempList.add(addList.get(i));
-			}
-			addList = tempList;
-			deleteButton.setDisable(true);
-			backButton.setDisable(false);
 		});
 
 		removeButton.setOnAction(e -> {
@@ -169,7 +156,7 @@ public class AddComic {
 			closeThis();
 		});
 
-		topBox.getChildren().addAll(input, pubName, srchButton, addButton, removeButton, backButton, doneButton);
+		topBox.getChildren().addAll(input, pubName, srchButton, addButton, removeButton, backButton, doneButton, pb);
 
 		// layout.setPadding(new javafx.geometry.Insets(10));
 		layout.setTop(topBox);
@@ -194,17 +181,35 @@ public class AddComic {
 			vols = CVrequest.searchVolume(term, pub);
 		}
 
-		List<VolResult> results = new ArrayList<VolResult>();
+		Task task = new Task<Void>() {
 
-		for (Volume v : vols) {
-			// leftBox.getChildren().add(new VolumeButton(v, this));
-			results.add(new VolResult(v));
-		}
+			@Override
+			protected Void call() throws Exception {
+				List<VolResult> results = new ArrayList<VolResult>();
+				added = 0;
+				for (Volume v : vols) {
+					// leftBox.getChildren().add(new VolumeButton(v, this));
+					System.out.println("Adding " + v.getID());
+					results.add(new VolResult(v));
+					added++;
+					Platform.runLater(() -> {
+						double prog = added / vols.size();
+						System.out.println("progress = " + added + " / " + (double) vols.size() + " = " + prog);
+						pb.setProgress(prog);
+					});
+				}
 
-		int volSize = vols.size();
+				int volSize = vols.size();
 
-		ObservableList<VolResult> obvRes = FXCollections.observableList(results);
-		list.setItems(obvRes);
+				ObservableList<VolResult> obvRes = FXCollections.observableList(results);
+				list.setItems(obvRes);
+				return null;
+			}
+
+		};
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
 	}
 
 	public void getIssues(String volID) {
@@ -228,21 +233,34 @@ public class AddComic {
 			@Override
 			public void changed(ObservableValue<? extends IssueResult> observable, IssueResult oldValue,
 					IssueResult newValue) {
-				layout.setCenter(new DetailView(newValue.getIssue()));
-				Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
+				new Thread(new Runnable() {
 
-				if (addList.contains(iSel)) {
+					@Override
+					public void run() {
 
-					deleteButton.setDisable(false);
-					addButton.setDisable(true);
-				} else if (!addList.contains(iSel)) {
-					deleteButton.setDisable(true);
-					addButton.setDisable(false);
-				}
+						Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
+						Platform.runLater(() -> {
+							layout.setCenter(new DetailView(newValue.getIssue()));
+							if (addList.contains(iSel)) {
+								System.out.println("This issue is already in the list");
+								removeButton.setDisable(false);
+								addButton.setDisable(true);
+							} else if (!addList.contains(iSel)) {
+								System.out.println("This issue is NOT already in the list");
+								removeButton.setDisable(true);
+								addButton.setDisable(false);
+							}
+						});
+					}
+				}).start();
+
 			}
+
 		});
+
 		scPane.setContent(issueList);
-		//System.out.println("scPane: " + scPane.getHeight() + "\tissueList " + issueList.getHeight());
+		// System.out.println("scPane: " + scPane.getHeight() + "\tissueList " +
+		// issueList.getHeight());
 	}
 
 	public void closeThis() {
