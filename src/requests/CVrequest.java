@@ -2,8 +2,6 @@ package requests;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;

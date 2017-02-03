@@ -195,6 +195,7 @@ public class CVImage {
 			if(path.equals("") || path == null){
 				System.err.println("No image path found for " + id);
 			}
+			File file = new File(path);
 			img = ImageIO.read(new File(path));
 		} catch (SQLException | IOException e) {
 			// TODO Auto-generated catch block

@@ -11,7 +11,6 @@ import model.Issue;
 import model.Volume;
 import scenes.IssuePreview;
 import scenes.VolumePreview;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 

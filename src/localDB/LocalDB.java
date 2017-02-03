@@ -9,17 +9,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import model.Issue;
 import model.Volume;
+import model.CharCred;
 import requests.CVImage;
 import requests.SQLQuery;
 import scenes.VolumePreview;
@@ -366,11 +367,14 @@ public class LocalDB {
 			// newconn.close();
 			if (updated != 1) {
 				System.out.println("SQL insert failed");
+				return false;
 			}
+			newstat.close();
+			newconn.close();
 			// System.out.println(stat.executeUpdate(str));
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
 		return true;
 	}
@@ -572,7 +576,7 @@ public class LocalDB {
 			public int compare(VolumePreview vp1, VolumePreview vp2) {
 				String vp1Name = vp1.getVolName().replaceAll("The ", "");
 				String vp2Name = vp2.getVolName().replaceAll("The ", "");
-				
+
 				return vp1Name.compareTo(vp2Name) * ((order) ? 1 : -1);
 			}
 		};
@@ -1040,6 +1044,73 @@ public class LocalDB {
 			System.out.println("could not convert " + s);
 		}
 		return val;
+	}
+
+	/**
+	 * Delete all data from the given table
+	 * 
+	 * @param table
+	 *            to clear
+	 * @return whether more than zero records were updated
+	 */
+	public static boolean truncate(String table) {
+		return LocalDB.executeUpdate("DELETE FROM " + table + ";");
+	}
+
+	public static ArrayList<CharCred> getCharacterList(String id) {
+		ResultSet rs = LocalDB.executeQuery("SELECT character_credits FROM issue WHERE id = '" + id + "';");
+		ArrayList<CharCred> results = new ArrayList<CharCred>();
+		String name;
+		String idNum;
+		String link;
+		
+		try {
+			String result = null;
+			rs.next();
+			if(!rs.isClosed())
+				result = rs.getString(1);
+			
+			rs.close();
+			if (result == null || result.equals("")) {
+				return results;
+			}
+			JSONArray ja = new JSONArray(result);
+
+			for (int i = 0; i < ja.length(); i++) {
+				name = ja.getJSONObject(i).get("name").toString();
+				idNum = ja.getJSONObject(i).get("id").toString();
+				link = ja.getJSONObject(i).get("site_detail_url").toString();
+
+				results.add(new CharCred(idNum, name, link));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return results;
+	}
+
+	/**
+	 * Fetches site_detail_url for given issue
+	 * @param id
+	 * @return
+	 */
+	public static String getIssueSite(String id) {
+		String result = "";
+		ResultSet rs = LocalDB.executeQuery("SELECT site_detail_url FROM issue WHERE id = '" + id + "';");
+		try {
+			rs.next();
+			result = rs.getString(1);
+
+			if (result == null) {
+				result = "";
+			}
+			rs.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 }

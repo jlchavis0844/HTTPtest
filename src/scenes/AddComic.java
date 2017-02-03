@@ -3,7 +3,6 @@ package scenes;
 import java.util.ArrayList;
 import java.util.List;
 
-import application.Main;
 import model.*;
 import requests.CVrequest;
 import javafx.application.Platform;
@@ -45,6 +44,8 @@ public class AddComic {
 
 	public AddComic(List<Issue> added) {
 		pb = new ProgressBar(0.0);
+		pb.setPrefWidth(200);
+		pb.setVisible(false);
 		addList = added;
 		window = new Stage();
 		window.setTitle("Add Comics!");
@@ -58,12 +59,12 @@ public class AddComic {
 		layout = new BorderPane();
 		topBox = new HBox(10);
 		list = new ListView<VolResult>();
-		list.setMinWidth(1000);
+		list.setMinWidth(300);
 		list.setMaxWidth(1200);
-		list.setMinHeight(800);
+		list.setMinHeight(500);
 
 		issueList = new ListView<IssueResult>();
-		issueList.setMinWidth(1000);
+		issueList.setMinWidth(300);
 		issueList.setMaxWidth(1200);
 
 		list.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<VolResult>() {
@@ -89,15 +90,15 @@ public class AddComic {
 
 		scPane = new ScrollPane();
 		scPane.setMaxWidth(1200);
-		scPane.setMinWidth(1000);
-		scPane.setMinHeight(800);
+		scPane.setMinWidth(500);
+		scPane.setMinHeight(500);
 		scPane.setFitToWidth(true);
 		scPane.setFitToHeight(true);
 		scPane.setStyle("-fx-background: rgb(80,80,80);");
 
 		input = new TextField();
 		input.setPromptText("Enter Search Terms");
-		input.setMinWidth(600);
+		input.setMinWidth(200);
 
 		pubName = new TextField();
 		pubName.setPromptText("Publisher Name");
@@ -128,6 +129,7 @@ public class AddComic {
 
 		srchButton.setOnAction(e -> {
 			if (!input.getText().equals("")) {
+				pb.setVisible(true);
 				addButton.setDisable(true);
 				scPane.setContent(list);
 				System.out.println(input.getText());
@@ -196,6 +198,9 @@ public class AddComic {
 						double prog = added / vols.size();
 						System.out.println("progress = " + added + " / " + (double) vols.size() + " = " + prog);
 						pb.setProgress(prog);
+						if(prog == 1){
+							pb.setVisible(false);
+						}
 					});
 				}
 

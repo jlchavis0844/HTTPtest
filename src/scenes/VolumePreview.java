@@ -2,7 +2,6 @@ package scenes;
 
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.List;
 
 import application.Main;

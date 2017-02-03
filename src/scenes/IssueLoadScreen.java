@@ -2,6 +2,7 @@ package scenes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import application.Main;
 import javafx.application.Platform;
@@ -89,7 +90,8 @@ public class IssueLoadScreen {
 
 		layout.setCenter(myVBox);
 		layout.setTop(pb);
-		pb.setPrefWidth(layout.getPrefWidth()-50);
+		pb.setPrefWidth(400);
+		pb.setVisible(false);
 		layout.setAlignment(pb, Pos.CENTER);
 
 		back = new Button("Back to adding comics");
@@ -119,6 +121,7 @@ public class IssueLoadScreen {
 			willAdd.forEach(i -> {
 				System.out.println(i);
 			});
+			pb.setVisible(true);
 			bottom.getChildren().clear();
 			addIssues(stage);
 
@@ -182,6 +185,7 @@ public class IssueLoadScreen {
 
 				if (cntr == willAdd.size()) {
 					System.out.println("Added:" + cntr);
+					TimeUnit.SECONDS.sleep(1);
 					Platform.runLater(() -> {
 						cancel.fire();
 						// cancel.setText("Done loading, click to continue");

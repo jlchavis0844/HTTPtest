@@ -12,9 +12,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
-import requests.CVImage;
+import localDB.LocalDB;
 import requests.SQLQuery;
 
 public class LogIn {
@@ -22,6 +24,7 @@ public class LogIn {
 	private CheckBox cb;
 	private Button loginButton;
 	private Button signUpButton;
+	private Button nuke;
 	private TextField usernameTextField;
 	private PasswordField passwordTextField;
 	private Label incorrect;
@@ -29,41 +32,54 @@ public class LogIn {
 	private String[] info;
 
 	public LogIn() throws IOException {
-		//CVImage.cleanAllLocalImgs();// clean up images on start up
+		// CVImage.cleanAllLocalImgs();// clean up images on start up
 		Stage stage = new Stage();
 
 		stage.setTitle("Welcome | Login or Sign Up");
 		GridPane grid = new GridPane();
 
-		incorrect = new Label("Logging in failed");//will hold error message
-		incorrect.setVisible(false);//default to not visible
-		incorrect.setTextFill(Color.RED);//make it red
+		incorrect = new Label("Logging in failed");// will hold error message
+		incorrect.setVisible(false);// default to not visible
+		incorrect.setTextFill(Color.RED);// make it red
 		usernameTextField = new TextField();
 		passwordTextField = new PasswordField();
 		loginButton = new Button("Log In");
 		signUpButton = new Button("Sign Up");
 		cb = new CheckBox("Auto Login");
+		cb.setTextFill(Paint.valueOf("#BBBBBB"));
+		nuke = new Button("Clear login info");
 
-		//set focus to allow prompt text to display on user and password fields
-		Platform.runLater(new Runnable(){
-			public void run(){
+		// set focus to allow prompt text to display on user and password fields
+		Platform.runLater(new Runnable() {
+			public void run() {
 				cb.requestFocus();
 			}
 		});
 		signUpButton.setOnAction(e -> {
-			boolean temp = sendRegister();//try to register
-			if(temp)//if registration is good
-				stage.close();//close stage and move on
+			boolean temp = sendRegister();// try to register
+			if (temp)// if registration is good
+				stage.close();// close stage and move on
 		});
 
-		loginButton.setOnAction(e ->{
+		nuke.setOnAction(e -> {
+			if (LocalDB.truncate("login")) {
+				usernameTextField.clear();
+				passwordTextField.clear();
+				loginButton.setDisable(true);
+				signUpButton.setDisable(false);
+			} else {
+				AlertBox.display("Login Info NOT Cleared", "Clearing login data failed");
+			}
+		});
+
+		loginButton.setOnAction(e -> {
 			info[0] = usernameTextField.getText();
 			info[1] = passwordTextField.getText();
-			//info[2] = getCurrentTimeStamp();
+			// info[2] = getCurrentTimeStamp();
 			info[3] = String.valueOf(cb.isSelected());
 			System.out.println("Sending login info... " + arrString(info));
 			boolean temp = SQLQuery.login(info[0], info[1]);
-			if(temp){
+			if (temp) {
 				SQLQuery.setLoginInfo(info);
 				SQLQuery.fullSync();
 				stage.close();
@@ -76,26 +92,29 @@ public class LogIn {
 		usernameTextField.setPromptText("Username");
 		passwordTextField.setPromptText("Password");
 
-		info = SQLQuery.getLoginInfo();//get username, password, timestamp, auto
-		if (info[0] != null) {//if login info is found
-			usernameTextField.setText(info[0]);//set username
-			passwordTextField.setText(info[1]);//set password
-			cb.setSelected(Boolean.valueOf(info[3]));//auto login?
-			signUpButton.setVisible(false);//hide register button
-			loginButton.setVisible(true);//show login button
-		} else {//there is no login info found
-			signUpButton.setVisible(true);//make signup button visible
+		info = SQLQuery.getLoginInfo();// get username, password, timestamp,
+										// auto
+		if (info[0] != null) {// if login info is found
+			usernameTextField.setText(info[0]);// set username
+			passwordTextField.setText(info[1]);// set password
+			cb.setSelected(Boolean.valueOf(info[3]));// auto login?
+			signUpButton.setDisable(true);// hide register button
+			loginButton.setDisable(false);// show login button
+		} else {// there is no login info found
+			signUpButton.setDisable(false);// make signup button visible
 			newUser = true;
-			loginButton.setVisible(false);//hide login until registration is done
+			loginButton.setDisable(true);// hide login until registration is
+											// done
 		}
 
+		HBox buttons = new HBox(10);
+		buttons.getChildren().addAll(loginButton, signUpButton, nuke);
 		// grid.add(loginLabel, 1, 0, 1, 1);
 		grid.add(usernameTextField, 1, 0, 2, 1);
 		grid.add(passwordTextField, 1, 1, 2, 1);
-		grid.add(loginButton, 1, 2, 1, 1);
-		grid.add(signUpButton, 2, 2, 1, 1);
-		grid.add(cb, 3, 2, 1, 1);
-		grid.add(incorrect, 1, 4,4,2);
+		grid.add(buttons, 1, 3);
+		grid.add(cb, 1, 4, 1, 1);
+		grid.add(incorrect, 1, 5, 4, 2);
 
 		grid.setVgap(5);
 		grid.setHgap(5);
@@ -104,67 +123,68 @@ public class LogIn {
 		// bp.setCenter(grid);
 
 		Scene scene = new Scene(grid, 400, 200);
-		//String style = LogIn.class.getResource("../application.css").toExternalForm();
-		//scene.getStylesheets().add(style);
+		String style = LogIn.class.getResource("../application.css").toExternalForm();
+		scene.getStylesheets().add(style);
 		stage.setResizable(false);
 		stage.setScene(scene);
 
 		boolean loggedIn = false;
-		if(!cb.isSelected()){
+		if (!cb.isSelected()) {
 			stage.showAndWait();
 			SQLQuery.fullSync();
-		} else if(!newUser && cb.isSelected()){
+		} else if (!newUser && cb.isSelected()) {
 			loggedIn = SQLQuery.login(info[0], info[1]);
 			SQLQuery.fullSync();
-			if(!loggedIn) {
-				AlertBox.display("Unable to log in", 
-						"Logging in has failed, check information and try again");
+			if (!loggedIn) {
+				AlertBox.display("Unable to log in", "Logging in has failed, check information and try again");
 				cb.setSelected(false);
-				signUpButton.setVisible(true);
+				signUpButton.setDisable(false);
 				incorrect.setText("Stored user info is incorrect");
 				incorrect.setVisible(true);
 				stage.showAndWait();
 			} else {
-//				stage.show();
-//				signUpButton.setVisible(false);
-//				loginButton.setVisible(false);
+				// stage.show();
+				// signUpButton.setVisible(false);
+				// loginButton.setVisible(false);
 			}
 		} else {
 			SQLQuery.fullSync();
 		}
 	}
 
-	public boolean sendRegister(){
+	public boolean sendRegister() {
 		boolean reged = false;
 		String user = usernameTextField.getText();
 		String pass = passwordTextField.getText();
 
-		if(user == null || user.equals("")){
+		if (user == null || user.equals("")) {
 			incorrect.setVisible(true);
 			incorrect.setText("Missing User Name");
-			//AlertBox.display("Missing username", "Please enter your username");
+			// AlertBox.display("Missing username", "Please enter your
+			// username");
 			return false;
 		}
 
-		if(pass == null || pass.equals("")){
-			//AlertBox.display("Missing password", "Please enter your password");
+		if (pass == null || pass.equals("")) {
+			// AlertBox.display("Missing password", "Please enter your
+			// password");
 			incorrect.setVisible(true);
 			incorrect.setText("Missing password");
 			return false;
 		}
 
 		String response = SQLQuery.register(user, pass);
-		if(response.contains("ERROR:")){
+		if (response.contains("ERROR:")) {
 			incorrect.setText(response);
 			incorrect.setVisible(true);
 			return false;
-		} else reged = true;
+		} else
+			reged = true;
 
-		String[] info = {user, pass, getCurrentTimeStamp(), String.valueOf(cb.isSelected())};
+		String[] info = { user, pass, getCurrentTimeStamp(), String.valueOf(cb.isSelected()) };
 		reged = SQLQuery.setLoginInfo(info);
 
-
-		if(!reged){
+		if (!reged) {
 			incorrect.setText("Write to DB failed");
 			incorrect.setVisible(true);
 		} else {
@@ -179,15 +199,14 @@ public class LogIn {
 		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(ts);
 		return timeStamp;
 	}
-	
-	public static String arrString(String[] arr){
+
+	public static String arrString(String[] arr) {
 		String line = "[";
-		for(String s: arr)
+		for (String s : arr)
 			line += (s + ", ");
-		line = line.substring(0, line.length()-2);
+		line = line.substring(0, line.length() - 2);
 		line += "]";
 		return line;
 	}
-	
 
 }

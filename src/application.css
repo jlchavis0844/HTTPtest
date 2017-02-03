@@ -47,9 +47,9 @@ Default label look
 	-fx-border-color: #6E6E6E;
 	-fx-text-fill: white;
 }*/
-.Tab {
+/*.Tab {
 -fx-background-color: Grey;
-/*-fx-font-size: 16pt;*/
+/*-fx-font-size: 16pt;*
 -fx-border-color:Grey;
 -fx-border-width:1;
 -fx-border-width:5px;
@@ -62,12 +62,6 @@ Default label look
 
 }
 
-.Tab:selected .tab-label {
-    -fx-background-color: Grey;
-    -fx-alignment: CENTER;
-    -fx-text-fill: -default-highlight;          
-}
-
 .tab-content-area {
     -fx-background-color: Grey;
 }
@@ -78,12 +72,47 @@ Default label look
     -fx-border-color: Grey;
 }
 
-
-.Tab:selected {
-    -fx-background-color: Grey;
-    -fx-border-width:1;
-    -fx-border-color: Grey;
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+	-fx-border-color: blue;
+	-fx-border-width: 2px, 2px, 2px, 2px;
+}*/
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-opacity: 0;
 }
+
+.tab-pane
+{
+    -fx-tab-min-width:90px;
+}
+
+.tab{
+    -fx-background-insets: 0 1 0 1,0,0;
+    /*-fx-background-color: #BBBBBB;*/
+}
+.tab-pane .tab
+{
+    -fx-background-color: #3C3F41;
+    -fx-border-color: #666666;
+
+}
+
+.tab-pane .tab:selected
+{
+    -fx-background-color: #2B2B2B;
+}
+
+.tab .tab-label { 
+    -fx-alignment: CENTER;
+    -fx-text-fill: #828282;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.tab:selected .tab-label { 
+    -fx-alignment: CENTER;
+    -fx-text-fill: #828282;
+}
+
 /**************************
            Button
 Default button theme
@@ -255,12 +284,39 @@ The collection LIST (not tree)
 
 /*******************************************************************/
 
-.list-cell:filled:selected:focused, .list-cell:filled:selected {
+/*.list-cell:filled:selected:focused, .list-cell:filled:selected {
     -fx-background-color: linear-gradient(#939393 0%, #3d3d3d 100%);
     -fx-text-fill: white;
-}
+}*/
 
 .list-cell:filled:hover {
     -fx-background-color: #7a7a7a;
     -fx-text-fill: white;
+}
+
+.combo-box .list-cell 
+{
+    -fx-background: #3C3F41;
+    -fx-background-color: #3C3F41;
+    -fx-text-fill: #BBBBBB;
+    -fx-padding: 3 0 2 7;
+    -fx-cell-size: 1.66667em; 
+}
+
+.combo-box .arrow, .combo-box .arrow-button{
+    -fx-background-color: #7a7a7a;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #BBBBBB;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: #3C3F41;
+    -fx-border-color: #BBBBBB;
+    -fx-size: 10;
+}
+
+.check-box *.box {
+	-fx-background-color: #3C3F41;
 }
