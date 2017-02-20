@@ -12,6 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -21,6 +22,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import localDB.LocalDB;
@@ -34,8 +38,9 @@ public class DetailView extends BorderPane {
 	private String link;
 	private WebView webView;
 	private WebEngine webEngine;
+	private String webLink;
 
-	public DetailView(Issue issue) {
+	public DetailView(Issue issue, boolean loadWeb) {
 		super();
 
 		if (!issue.isFull())
@@ -57,13 +62,21 @@ public class DetailView extends BorderPane {
 		TextField volName = new TextField(issue.getVolumeName());
 		TextField writer = new TextField(issue.getPerson("writer"));
 		writer.setEditable(false);
+		Label arcLbl = new Label("Story Arc");
+		TextField arcName = new TextField(issue.getArcName());
+		webLink = issue.getWebLink();
+
 		// center.getChildren().addAll(volName,issueNum,name,cDate, writer);
 
 		this.setPadding(new Insets(10));
 
 		GridPane grid = new GridPane();
-		grid.setVgap(30);
-		grid.setHgap(10);
+		grid.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
+				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
+		grid.setPadding(new Insets(5, 5, 10, 5));
+		grid.setScaleShape(true);
+		grid.setVgap(10);
+		grid.setHgap(5);
 
 		grid.add(volNameLbl, 0, 1);
 		grid.add(volName, 1, 1);
@@ -80,51 +93,11 @@ public class DetailView extends BorderPane {
 		grid.add(writerLbl, 0, 5);
 		grid.add(writer, 1, 5);
 
-		grid.add(new Label("artist"), 0, 6);
+		grid.add(new Label("Artist"), 0, 6);
 		grid.add(new TextField(issue.getPerson("art")), 1, 6);
-
-		Label arcLbl = new Label("Story Arc");
-		TextField arcName = new TextField(issue.getArcName());
 
 		grid.add(arcLbl, 0, 7);
 		grid.add(arcName, 1, 7);
-
-		WebView descBox = new WebView();
-		// descBox.setMinHeight(50);
-		// descBox.setPrefHeight(100);
-		String desc = issue.getDescription();
-		Document doc = Jsoup.parse(desc);
-		doc.select("table").remove();
-		doc.append("<link rel=\"stylesheet\" type=\"text/css\" href=\""
-				+ getClass().getResource("../application.css").toExternalForm() + "\" />");
-		doc.select("h4").remove();
-		desc = doc.toString();
-		// descBox.getEngine().setUserStyleSheetLocation(getClass().getResource("../application.css").toExternalForm());
-		descBox.getEngine().loadContent(desc);
-		descBox.setMaxHeight(300);
-		// descBox.setFontScale(0.75);
-
-		BufferedImage bi = issue.getImage("medium");
-		Image image = SwingFXUtils.toFXImage(bi, null);
-		ImageView imageView = new ImageView(image);
-		imageView.setOnMouseClicked((MouseEvent event) -> {
-			webView = new WebView();
-			webView.setPrefSize(500, 600);
-			webEngine = webView.getEngine();
-			webEngine.setJavaScriptEnabled(false);
-			webEngine.load(LocalDB.getIssueSite(issue.getID()));
-			setLeft(webView);
-			
-		});
-		
-		imageView.setFitWidth(520);
-		imageView.setFitHeight(800);
-
-		setBottom(descBox);
-		//setMargin(descBox, new Insets(10));
-		setCenter(grid);
-		// setCenter(center);
-		setRight(imageView);
 
 		editButton = new Button("Save Changes");
 		editButton.setVisible(true);
@@ -134,7 +107,64 @@ public class DetailView extends BorderPane {
 			LocalDB.update(issue.getID(), "cover_date", cDate.getSelectedText().toString(), 0);
 			LocalDB.update(issue.getID(), "volume", volName.getSelectedText().toString(), 0);
 		});
+
 		grid.add(editButton, 0, 8);
+
+		WebView descBox = new WebView();
+		StackPane webBox = new StackPane();
+		webBox.setPadding(new Insets(10));
+		webView = new WebView();
+		webBox.getChildren().add(webView);
+		descBox.setMinHeight(50);
+		descBox.setPrefHeight(200);
+		descBox.autosize();
+		String desc = issue.getDescription();
+		Document doc = Jsoup.parse(desc);
+		doc.select("table").remove();
+		doc.append("<link rel=\"stylesheet\" type=\"text/css\" href=\""
+				+ getClass().getResource("../application.css").toExternalForm() + "\" />");
+		doc.select("h4").remove();
+		desc = doc.toString();
+		// descBox.getEngine().setUserStyleSheetLocation(getClass().getResource("../application.css").toExternalForm());
+
+		desc = desc.replaceAll("null", "No summary");
+		descBox.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
+				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
+
+		descBox.getEngine().loadContent(desc);
+		descBox.setMaxHeight(300);
+		// descBox.setFontScale(0.75);
+		descBox.getStyleClass().add("browser");
+
+		BufferedImage bi = issue.getImage("medium");
+		Image image = SwingFXUtils.toFXImage(bi, null);
+		ImageView imageView = new ImageView(image);
+		imageView.setOnMouseClicked((MouseEvent event) -> {
+			if (loadWeb) {
+				webEngine.load(webLink);
+				setRight(webBox);
+			}
+		});
+
+		imageView.setFitWidth(390);
+		imageView.setFitHeight(600);
+		VBox tempHack = new VBox(10);
+		tempHack.setMinHeight(620);
+		tempHack.setMinWidth(410);
+		tempHack.setAlignment(Pos.CENTER);
+		tempHack.getChildren().add(imageView);
+		tempHack.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
+				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
+		// setMargin(descBox, new Insets(10));
+		setLeft(grid);
+		// setCenter(center);
+		setCenter(tempHack);
+		String titleTxt = "";
+		titleTxt += issue.getVolumeName() + " #" + issue.getIssueNum();
+		titleTxt += "\t(" + issue.getCoverDate() + ")";
+		Label title = new Label(titleTxt);
+		title.setStyle("-fx-font: 40px \"Comic Sans\";");
+		setTop(title);
 
 		ScrollPane scrollPane = new ScrollPane();
 		chars = LocalDB.getCharacterList(issue.getID());
@@ -144,34 +174,54 @@ public class DetailView extends BorderPane {
 			charNames.add(c.getName());
 		}
 		ObservableList<String> data = FXCollections.observableArrayList(charNames);
-		ListView<String> list = new ListView<>(data);
-		list.setStyle("-fx-background-insets: 0 ;");
+		ListView<String> listView = new ListView<>(data);
 
-		list.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			link = null;
-			for (CharCred c : chars) {
-				if (c.getName().equals((String) (newValue))) {
-					link = c.getLink();
-					break;
+		listView.setStyle("-fx-border-color: #2B2B2B");
+		listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			if(loadWeb){
+				link = null;
+				for (CharCred c : chars) {
+					if (c.getName().equals((String) (newValue))) {
+						link = c.getLink();
+						break;
+					}
 				}
+	
+				Platform.runLater(() -> {
+					webEngine.load(link);
+					setRight(webBox);
+				});
 			}
-
-			Platform.runLater(() -> {
-				webView = new WebView();
-				webView.setPrefSize(500, 600);
-				webEngine = webView.getEngine();
-				webEngine.setJavaScriptEnabled(false);
-				webEngine.load(link);
-				setLeft(webView);
-			});
-
 			System.out.println("Loading Link..." + link);
 		});
 
-		scrollPane.setContent(list);
-		grid.add(scrollPane, 0, 9, 2, 5);
+		StackPane browser = new StackPane();
+		browser.setPadding(new Insets(10));
+
+		browser.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
+				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
+		browser.getChildren().add(descBox);
+		setBottom(browser);
+
+
+		
+		webBox.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
+				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
+		webEngine = webView.getEngine();
+		webEngine.setJavaScriptEnabled(false);
+
+		if (loadWeb) {
+			setRight(webBox);
+
+			Platform.runLater(() -> {
+				webEngine.load(webLink);
+			});
+		}
+
+		scrollPane.setStyle("-fx-border-color: #2B2B2B");
+		scrollPane.setContent(listView);
+		grid.add(scrollPane, 0, 10, 2, 5);
 		scrollPane.setFitToHeight(true);
 		scrollPane.setFitToWidth(true);
-		scrollPane.setStyle("-fx-border-color: transparent");
 	}
 }

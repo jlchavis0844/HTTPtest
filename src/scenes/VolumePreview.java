@@ -18,7 +18,7 @@ import javafx.scene.layout.HBox;
 import localDB.LocalDB;
 import model.Issue;
 import model.Volume;
-
+@SuppressWarnings("restriction")
 public class VolumePreview extends HBox{
 	private Volume vol;
 	private ImageView thumb;
@@ -91,6 +91,7 @@ public class VolumePreview extends HBox{
 		return vol.getName();
 	}
 
+	
 	public void update(List<Issue> allIssues){
 		int counter = 0;
 		for(Issue i : allIssues){

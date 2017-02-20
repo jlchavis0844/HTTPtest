@@ -23,7 +23,8 @@ public class VolResult extends HBox {
 	public VolResult(Volume vol) {
 		super();
 		this.vol = vol;
-		
+		this.setMaxWidth(500);
+		setMinWidth(250);
 		text = new Label();
 		String info = vol.getName() + "\n" + vol.getPublisher() + "\n" + vol.getStartYear() +
 				"\n" + vol.getCountofIssue() + " issues";

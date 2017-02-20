@@ -22,7 +22,7 @@ public class IssueResult extends VBox {
 	public IssueResult(Issue rhIssue) {
 		super();
 		this.issue = rhIssue;
-		
+		setMaxWidth(500);
 		text = new Label();
 		text.setWrapText(true);
 		String info = "Issue# " + issue.getIssueNum()+ " \tDate: "  + issue.getCoverDate() + "\n" + issue.getName();
@@ -36,7 +36,7 @@ public class IssueResult extends VBox {
 		info += "\n" + descript;
 		text.setText(info);
 		text.setTextAlignment(TextAlignment.JUSTIFY);
-		text.setPrefSize(900, 200);
+		text.setPrefSize(500, 200);
 		setMaxHeight(200);
 		/*desc = new WebView();
 		desc.getEngine().loadContent(issue.getDescription());

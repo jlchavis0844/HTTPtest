@@ -16,8 +16,10 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import localDB.LocalDB;
 import model.Issue;
 
@@ -54,6 +56,7 @@ public class IssueLoadScreen {
 		volPreviews = v;
 
 		Stage stage = new Stage();
+		stage.initStyle(StageStyle.TRANSPARENT);
 		stage.initModality(Modality.APPLICATION_MODAL);
 
 		BorderPane layout = new BorderPane();
@@ -63,7 +66,7 @@ public class IssueLoadScreen {
 		pb.setScaleShape(true);
 		VBox myVBox = new VBox();
 		myVBox.setPadding(new Insets(20, 10, 20, 10));
-
+		
 		addList = new ArrayList<>();
 		addedCopy = new ArrayList<>(added);
 		willAdd = new ArrayList<Issue>();
@@ -143,7 +146,12 @@ public class IssueLoadScreen {
 		bottom = new HBox(5);
 		bottom.getChildren().addAll(back, newAdd, cancel, go);
 		layout.setBottom(bottom);
+		layout.setStyle("-fx-border-radius: 20 20 20 20; " 
+				+ "-fx-background-radius: 20 20 20 20; "
+				+ "-fx-background-color: #2B2B2B; "
+				+ "-fx-border-color: #BBBBBB;");
 		Scene scene = new Scene(layout);
+		scene.setFill(Color.TRANSPARENT);
 		String style = getClass().getResource("../application.css").toExternalForm();
 		scene.getStylesheets().add(style);
 		stage.setScene(scene);
@@ -161,7 +169,7 @@ public class IssueLoadScreen {
 					allIssues.add(i);
 					int foundIndex = -1;
 					for (int j = 0; j < volPreviews.size(); j++) {
-						if (volPreviews.get(j).getVolName().equals(i.getVolumeName())) {
+						if (volPreviews.get(j).getVolume().getID().equals(i.getVolumeID())) {
 							foundIndex = j;
 							volPreviews.get(j).update(allIssues);
 						}

@@ -2,15 +2,12 @@ package application;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.json.JSONException;
-import org.junit.Test;
-
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -23,6 +20,7 @@ import localDB.LocalDB;
 import model.Issue;
 import model.Volume;
 import requests.CVImage;
+import requests.CVrequest;
 import requests.SQLQuery;
 import scenes.AddComic;
 import scenes.DetailView;
@@ -38,6 +36,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.*;
@@ -48,16 +47,13 @@ import javafx.scene.layout.*;
  * @author jlchavis
  *
  */
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes", "unchecked","restriction"})
 public class Main extends Application {
 	private Stage window;// main stage
 	private BorderPane layout;// layout for window
-	private static ArrayList<Issue> added; // list to hold added issues from
-											// addComic scene
-	private static ArrayList<Issue> allIssues;// holds all issues from the local
-												// DB
-	private static ArrayList<Volume> allVols;// holds a list of all volumes,
-												// apart from issues
+	private static ArrayList<Issue> added; // list to hold added issues from addComic scene
+	private static ArrayList<Issue> allIssues;// holds all issues from the local DB
+	private static ArrayList<Volume> allVols;// holds a list of all volumes, apart from issues
 	private static List<VolumePreview> volPreviews;// holds VolumePreviews
 													// generated for every
 													// volume
@@ -71,10 +67,13 @@ public class Main extends Application {
 	private static Button quit;
 	private static Button viewLogin;
 	private static Button sync;
+	private static ToggleButton toggle;
+	private Issue issue;
 
 	/**
 	 * launched from main(), starts main scene/ui
 	 */
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		new LogIn();// launch login scene
@@ -85,6 +84,20 @@ public class Main extends Application {
 
 		layout = new BorderPane();// main scene is border pane
 		added = new ArrayList<Issue>();// for addComics scene
+
+		toggle = new ToggleButton("WebView: Off");
+		toggle.setOnAction((event) -> {
+			if (toggle.isSelected()) {
+				toggle.setText("WebView: On");
+			} else {
+				toggle.setText("WebView: Off");
+			}
+			if (issue != null) {
+				layout.setRight(new DetailView(issue, toggle.isSelected()));
+			}
+
+		});
+		toggle.getStyleClass().setAll("button");
 
 		System.out.println("getting all issues");
 		Long start; // timing purposes
@@ -118,6 +131,7 @@ public class Main extends Application {
 		treeView.setPrefHeight(700);
 		treeView.setPrefWidth(500);
 		treeView.setScaleShape(true);
+		
 		/**
 		 * Click listener to expand and show issues checks if clicking on volume
 		 * preview or issue nothing is volume preview, detail view if issue
@@ -134,8 +148,8 @@ public class Main extends Application {
 					TreeItem<IssuePreview> ti = (TreeItem<IssuePreview>) treeView.getSelectionModel().getSelectedItem();
 					if (ti != null) {
 						if (ti.getValue() != null && ti.getValue() instanceof IssuePreview) {
-							Issue issue = ti.getValue().getIssue();
-							layout.setRight(new DetailView(issue));
+							issue = ti.getValue().getIssue();
+							layout.setRight(new DetailView(issue, toggle.isSelected()));
 						} else
 							System.out.println("Issue preview is null");
 					} else
@@ -155,11 +169,14 @@ public class Main extends Application {
 		HBox issHeader = new HBox(10);
 		issHeader.setAlignment(Pos.CENTER_LEFT);
 		issHeader.setPadding(new Insets(10, 0, 0, 10));
-		issHeader.setPrefWidth(450);
+		issHeader.setPrefWidth(400);
 		VBox leftSide = new VBox(10);
+		leftSide.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
+				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
 		leftSide.setPrefWidth(issHeader.getPrefWidth());
 		leftSide.setPrefHeight(1000);
 		Button leftSearch = new Button("Search");
+		leftSearch.setMinWidth(60);
 		TextField srchTxt = new TextField();
 		srchTxt.setStyle("-fx-background-color: #3C3F41");
 		srchTxt.setPrefWidth(200);
@@ -207,14 +224,13 @@ public class Main extends Application {
 		// leftSide.setStyle("-fx-border-color: grey");
 
 		srchTree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem>() {
-			@Override
 			public void changed(ObservableValue<? extends TreeItem> observable, TreeItem oldValue, TreeItem newValue) {
 
 				TreeItem<IssuePreview> ti = (TreeItem<IssuePreview>) srchTree.getSelectionModel().getSelectedItem();
 				if (ti != null) {
 					if (ti.getValue() != null) {
 						Issue issue = ti.getValue().getIssue();
-						layout.setRight(new DetailView(issue));
+						layout.setRight(new DetailView(issue, toggle.isSelected()));
 					} else
 						System.out.println("something went wrong loading issue");
 				} else
@@ -281,13 +297,13 @@ public class Main extends Application {
 				e1.printStackTrace();
 			}
 		});
-		
+
 		sync = new Button("Sync Collection");
 		sync.setOnAction(e -> {
 			SQLQuery.fullSync();
 		});
 
-		hbox.getChildren().addAll(addButton, refresh, viewLogin, sync,quit);
+		hbox.getChildren().addAll(addButton, refresh, viewLogin, sync, toggle, quit);
 		layout.setTop(hbox);
 
 		addButton.setOnAction(e -> {
@@ -320,8 +336,10 @@ public class Main extends Application {
 		//
 		// });
 		// System.out.println(CVrequest.getApiKey());
-//		String blank = null;
-//		System.out.println("jdbc:sqlite:" + System.getProperty("user.dir") +"\\DigLongBox.db");
+		// String blank = null;
+		// System.out.println("jdbc:sqlite:" + System.getProperty("user.dir")
+		// +"\\DigLongBox.db");
+		//LocalDB.truncate("Volume");
 		File file = new File("./DigLongBox.db");
 		System.out.println(file.isFile());
 		try {
@@ -330,10 +348,10 @@ public class Main extends Application {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		System.out.println(Main.class.getResource("../application.css"));
+		// System.out.println(Main.class.getResource("../application.css"));
 		launch(args);
 		CVImage.cleanAllLocalImgs();
-//		System.out.println(System.getProperty("user.dir"));
+		// System.out.println(System.getProperty("user.dir"));
 		System.exit(0);
 	}
 
@@ -346,11 +364,18 @@ public class Main extends Application {
 		backgroundLoadIssues();
 	}
 
-	@SuppressWarnings("rawtypes")
+	/**
+	 * This will build a tree root that has the following structure<br>
+	 * <pre>|->Volumes<br></pre>
+	 * 	<pre>|---->Volume Name<br></pre>
+	 * 			<pre>|------->Issues<br></pre>
+	 * @param This is the "Volumes" 
+	 * @return True or False of success
+	 */
 	public static TreeItem buildRoot(String title) {
 		TreeItem root = new TreeItem<VolumePreview>();
 
-		root.setValue(title);
+		root.setValue("Your Comics");//not used f
 		root.setExpanded(true);
 		System.out.println("loading the following volumes: ");
 		LocalDB.sortVolumePreviews(volPreviews, true);
@@ -468,7 +493,6 @@ public class Main extends Application {
 	 * @param vol
 	 *            - this volume that should be removed
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void afterVolumeUpdate(Volume vol) {
 		allVols.remove(vol);
 		VolumePreview deleteMe = null;
@@ -488,17 +512,24 @@ public class Main extends Application {
 
 		treeView.setRoot(buildRoot("Volumes"));
 		backgroundLoadVols();
+		updateLeft(); //this is to work around the bug of displaying the wrong icon for issues.
 	}
 
+	/**
+	 * This function will do a complete reload from the SQl database of all volumes and all issues
+	 * so this is a pretty time consuming process vs calling update left which looks for
+	 * new issues/changes.
+	 */
 	public static void updateCollection() {
-		allIssues=LocalDB.getAllIssues();
-		allVols = LocalDB.getAllVolumes();
-		volPreviews.clear();
+		allVols = LocalDB.getAllVolumes(); // get all voulmes
+		allIssues = LocalDB.getAllIssues();//get all issues
 		
-		for(Volume v: allVols){
+		volPreviews.clear();//wipeout previews 
+
+		for (Volume v : allVols) { /// rebuild volumes
 			volPreviews.add(new VolumePreview(v, allIssues));
 		}
-		
+
 		LocalDB.sortVolumes(allVols);
 		treeView.setRoot(buildRoot("Volumes"));
 		backgroundLoadVols();

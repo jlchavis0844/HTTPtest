@@ -17,15 +17,17 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import localDB.LocalDB;
 
+@SuppressWarnings("restriction")
 public class AddComic {
 	private Button backButton;
-	private Button deleteButton;
 	private Button removeButton;
 	private Button srchButton;
 	private Button addButton;
@@ -48,6 +50,7 @@ public class AddComic {
 		pb.setVisible(false);
 		addList = added;
 		window = new Stage();
+		window.initStyle(StageStyle.UNDECORATED);
 		window.setTitle("Add Comics!");
 		window.initModality(Modality.APPLICATION_MODAL);
 
@@ -99,16 +102,32 @@ public class AddComic {
 		input = new TextField();
 		input.setPromptText("Enter Search Terms");
 		input.setMinWidth(200);
+		input.setOnKeyPressed(e -> {
+			System.out.println(e.getCode());
+			if (e.getCode() == KeyCode.ENTER) {
+				e.consume();
+				System.out.println("Enter was pressed");
+				srchButton.fire();
+			}
+		});
 
 		pubName = new TextField();
 		pubName.setPromptText("Publisher Name");
 		pubName.setMinWidth(200);
+		pubName.setOnKeyPressed(e -> {
+			System.out.println(e.getCode());
+			if (e.getCode() == KeyCode.ENTER) {
+				e.consume();
+				System.out.println("Enter was pressed");
+				srchButton.fire();
+			}
+		});
 
 		srchButton = new Button("Search");
 		addButton = new Button("Add Issue");
 		backButton = new Button("Back");
 		removeButton = new Button("Remove");
-		deleteButton = new Button("Delete");
+		new Button("Delete");
 		doneButton = new Button("Done Adding");
 		addButton.setDisable(true);
 		backButton.setDisable(true);
@@ -125,6 +144,7 @@ public class AddComic {
 			addButton.setDisable(true);
 			removeButton.setDisable(false);
 			backButton.setDisable(false);
+
 		});
 
 		srchButton.setOnAction(e -> {
@@ -134,6 +154,9 @@ public class AddComic {
 				scPane.setContent(list);
 				System.out.println(input.getText());
 				volSearch(input.getText(), pubName.getText());
+				Platform.runLater(() -> {
+					list.requestFocus();
+				});
 			}
 
 		});
@@ -152,6 +175,9 @@ public class AddComic {
 			removeButton.setDisable(true);
 			addButton.setDisable(false);
 			backButton.setDisable(false);
+			Platform.runLater(() -> {
+				list.requestFocus();
+			});
 		});
 
 		doneButton.setOnAction(e -> {
@@ -198,7 +224,7 @@ public class AddComic {
 						double prog = added / vols.size();
 						System.out.println("progress = " + added + " / " + (double) vols.size() + " = " + prog);
 						pb.setProgress(prog);
-						if(prog == 1){
+						if (prog == 1) {
 							pb.setVisible(false);
 						}
 					});
@@ -245,7 +271,7 @@ public class AddComic {
 
 						Issue iSel = issueList.getSelectionModel().getSelectedItem().getIssue();
 						Platform.runLater(() -> {
-							layout.setCenter(new DetailView(newValue.getIssue()));
+							layout.setCenter(new DetailView(newValue.getIssue(), false));
 							if (addList.contains(iSel)) {
 								System.out.println("This issue is already in the list");
 								removeButton.setDisable(false);

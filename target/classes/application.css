@@ -39,51 +39,43 @@ Default label look
     -fx-font-family: "Arial";
 }
 
-/*.tab-header-background {
-    -fx-background-color: #2B2B2B ;
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-opacity: 0;
 }
+
+.tab-pane
+{
+    -fx-tab-min-width:90px;
+}
+
 .tab{
-	-fx-background-color: Grey;
-	-fx-border-color: #6E6E6E;
-	-fx-text-fill: white;
-}*/
-.Tab {
--fx-background-color: Grey;
-/*-fx-font-size: 16pt;*/
--fx-border-color:Grey;
--fx-border-width:1;
--fx-border-width:5px;
+    -fx-background-insets: 0 1 0 1,0,0;
+    /*-fx-background-color: #BBBBBB;*/
+}
+.tab-pane .tab
+{
+    -fx-background-color: #3C3F41;
+    -fx-border-color: #666666;
+
 }
 
-.Tab .tab-label {
-    -fx-background-color: Grey;
+.tab-pane .tab:selected
+{
+    -fx-background-color: linear-gradient(#4A6BA8, #415270);
+}
+
+.tab .tab-label { 
     -fx-alignment: CENTER;
-    -fx-text-fill: -title-text-fill-color;
-
+    -fx-text-fill: #BBBBBB;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
 }
 
-.Tab:selected .tab-label {
-    -fx-background-color: Grey;
+.tab:selected .tab-label { 
     -fx-alignment: CENTER;
-    -fx-text-fill: -default-highlight;          
+    -fx-text-fill: White;
 }
 
-.tab-content-area {
-    -fx-background-color: Grey;
-}
-
-.tab-pane *.tab-header-background {
-    -fx-background-color: transparent;
-    -fx-border-width:1;
-    -fx-border-color: Grey;
-}
-
-
-.Tab:selected {
-    -fx-background-color: Grey;
-    -fx-border-width:1;
-    -fx-border-color: Grey;
-}
 /**************************
            Button
 Default button theme
@@ -120,18 +112,20 @@ Default button theme
     -fx-opacity: -fx-disabled-opacity;
 }
 
-.radio-button {
-/*-fx-font-family: "Arial";
--fx-font-size: 11;
-    -fx-text-fill: rgb(255, 255, 255, 0.4);
--fx-text-fill: lightgoldenrodyellow;
-    -fx-effect: dropshadow(one-pass-box , rgba(0, 0, 0, 0.6), 0, 0.0 , 0 , 1 );
--fx-border-width: 0px;*/
-    -fx-background-color: #49454A;
-    -fx-text-fill:  -fx-text-inner-color;
-    -fx-prompt-text-fill: #999999;
-    -fx-background-radius: 100;
+.button:selected {
+	-fx-background-color: linear-gradient(#4A6BA8, #415270);
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-font-size: 12px;
+    -fx-alignment: center-left;
+    -fx-font-family: "Arial";
+    -fx-background-radius: 5;
 }
+
+/**************************
+           toggleButton
+
+***************************/
+
 
 /**************************
            Hyperlink
@@ -141,7 +135,7 @@ Links to Comic Vine
 .hyperlink {
     -fx-cursor: hand;
     -fx-content-display: LEFT;
-    -fx-text-fill: #009999;
+    -fx-text-fill: #a0909f;
     -fx-font-family: "Arial";
 }
 
@@ -241,7 +235,7 @@ The collection LIST (not tree)
 }
 
 .tree-cell:filled:selected {
-    -fx-background-color: #2B2B2B;
+    -fx-background-color: linear-gradient(#4A6BA8, #415270);
     -fx-text-fill: white;
 }
 
@@ -255,12 +249,46 @@ The collection LIST (not tree)
 
 /*******************************************************************/
 
-.list-cell:filled:selected:focused, .list-cell:filled:selected {
+/*.list-cell:filled:selected:focused, .list-cell:filled:selected {
     -fx-background-color: linear-gradient(#939393 0%, #3d3d3d 100%);
     -fx-text-fill: white;
-}
+}*/
 
 .list-cell:filled:hover {
     -fx-background-color: #7a7a7a;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-cell 
+{
+    -fx-background: #3C3F41;
+    -fx-background-color: #3C3F41;
+    -fx-text-fill: #BBBBBB;
+    -fx-padding: 3 0 2 7;
+    -fx-cell-size: 1.66667em; 
+}
+
+.combo-box .arrow, .combo-box .arrow-button{
+    -fx-background-color: #7a7a7a;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #BBBBBB;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: #3C3F41;
+    -fx-border-color: #BBBBBB;
+    -fx-size: 10;
+}
+
+.check-box *.box {
+	-fx-background-color: #3C3F41;
+}
+
+.browser{
+    -fx-background-color: #666970;
+}
+.browser-toolbar .hyperlink, .browser-toolbar .button, .browser-toolbar{
     -fx-text-fill: white;
 }

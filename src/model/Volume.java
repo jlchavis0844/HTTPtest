@@ -164,7 +164,7 @@ public class Volume {
 	public static boolean check(JSONObject jo, String target) {
 		if (jo.has(target)) {
 			String val = jo.get(target).toString();
-			return (val != null && val.length() != 0);
+			return (val != null && val.length() != 0 && !val.equals("null"));
 		} else
 			return false;
 	}

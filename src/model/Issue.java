@@ -105,6 +105,7 @@ public class Issue {
 			return null;
 	}
 
+
 	public String getImgURL(String size) {
 		String sizes[] = { "icon", "thumb", "tiny", "small", "super", "screen", "medium" };
 		if (!ArrayUtils.contains(sizes, size)) {
@@ -186,5 +187,29 @@ public class Issue {
 		if (!line.equals(""))
 			line = line.substring(0, line.length() - 2);
 		return line;
+	}
+	
+	/**
+	 * Returns link to issues comic vine page
+	 * @return
+	 */
+	public String getWebLink(){
+		if(!check("site_detail_url")){
+			return null;
+		} else {
+			return jo.getString("site_detail_url");
+		}
+	}
+	
+	/**
+	 * Returns link to issues api comic vine page
+	 * @return
+	 */
+	public String getAPILink(){
+		if(!check("api_detail_url")){
+			return null;
+		} else {
+			return jo.getString("api_detail_url");
+		}
 	}
 }

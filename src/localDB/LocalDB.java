@@ -100,7 +100,7 @@ public class LocalDB {
 	 * stores images
 	 * 
 	 * @param issue
-	 * @return
+	 * @return boolean on the sucess of adding the issue
 	 */
 	public static boolean addIssue(Issue issue) {
 		try {

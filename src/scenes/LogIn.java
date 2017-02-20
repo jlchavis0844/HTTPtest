@@ -123,7 +123,9 @@ public class LogIn {
 		// bp.setCenter(grid);
 
 		Scene scene = new Scene(grid, 400, 200);
-		String style = LogIn.class.getResource("../application.css").toExternalForm();
+		System.out.println(LogIn.class.getResource("/application.css").toExternalForm());
+		String style = LogIn.class.getClass().getResource("/application.css").toExternalForm();
+		//String style = LogIn.class.getResource("../application.css").toExternalForm();
 		scene.getStylesheets().add(style);
 		stage.setResizable(false);
 		stage.setScene(scene);
