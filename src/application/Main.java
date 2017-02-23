@@ -21,6 +21,7 @@ import model.Issue;
 import model.Volume;
 import requests.CVImage;
 import requests.CVrequest;
+import requests.GBrequest;
 import requests.SQLQuery;
 import scenes.AddComic;
 import scenes.DetailView;
@@ -329,30 +330,33 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		// ArrayList<Volume> allVols = LocalDB.getAllVolumes();
-		// allVols.forEach(vol -> {
-		// CVImage.addVolumeImg(vol, "thumb");
-		// CVImage.addVolumeImg(vol, "medium");
-		//
-		// });
-		// System.out.println(CVrequest.getApiKey());
-		// String blank = null;
-		// System.out.println("jdbc:sqlite:" + System.getProperty("user.dir")
-		// +"\\DigLongBox.db");
-		//LocalDB.truncate("Volume");
-		File file = new File("./DigLongBox.db");
-		System.out.println(file.isFile());
-		try {
-			System.out.println(file.getCanonicalPath());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// System.out.println(Main.class.getResource("../application.css"));
-		launch(args);
-		CVImage.cleanAllLocalImgs();
-		// System.out.println(System.getProperty("user.dir"));
-		System.exit(0);
+//		// ArrayList<Volume> allVols = LocalDB.getAllVolumes();
+//		// allVols.forEach(vol -> {
+//		// CVImage.addVolumeImg(vol, "thumb");
+//		// CVImage.addVolumeImg(vol, "medium");
+//		//
+//		// });
+//		// System.out.println(CVrequest.getApiKey());
+//		// String blank = null;
+//		// System.out.println("jdbc:sqlite:" + System.getProperty("user.dir")
+//		// +"\\DigLongBox.db");
+//		//LocalDB.truncate("Volume");
+//		File file = new File("./DigLongBox.db");
+//		System.out.println(file.isFile());
+//		try {
+//			System.out.println(file.getCanonicalPath());
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		// System.out.println(Main.class.getResource("../application.css"));
+//		launch(args);
+//		CVImage.cleanAllLocalImgs();
+//		// System.out.println(System.getProperty("user.dir"));
+//		System.exit(0);
+		
+		//---------------testing-----------------------
+		GBrequest.searchGame("Horizon Zero Dawn");
 	}
 
 	public static void updateLeft() {
