@@ -17,6 +17,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import localDB.LocalDB;
+import model.Game;
 import model.Issue;
 import model.Volume;
 import requests.CVImage;
@@ -24,6 +25,7 @@ import requests.CVrequest;
 import requests.GBrequest;
 import requests.SQLQuery;
 import scenes.AddComic;
+import scenes.AddGame;
 import scenes.DetailView;
 import scenes.IssueLoadScreen;
 import scenes.IssuePreview;
@@ -36,6 +38,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.image.Image;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.TreeItem;
@@ -52,12 +55,12 @@ import javafx.scene.layout.*;
 public class Main extends Application {
 	private Stage window;// main stage
 	private BorderPane layout;// layout for window
-	private static ArrayList<Issue> added; // list to hold added issues from addComic scene
+	private static ArrayList<Issue> addedIssues; // list to hold added issues from addComic scene
+	private static ArrayList<Game> addedGames; // holds all games from the local DB
 	private static ArrayList<Issue> allIssues;// holds all issues from the local DB
 	private static ArrayList<Volume> allVols;// holds a list of all volumes, apart from issues
-	private static List<VolumePreview> volPreviews;// holds VolumePreviews
-													// generated for every
-													// volume
+	private static ArrayList<Game> allGames;// holds a list of all games from the database
+	private static List<VolumePreview> volPreviews;// holds VolumePreviews generated for every volume
 	private static ScrollPane leftScroll;// holds the tree that lists volumes
 	private HBox hbox;// for the top row of border frame
 	private Button addButton; // launches addComic scene
@@ -68,6 +71,7 @@ public class Main extends Application {
 	private static Button quit;
 	private static Button viewLogin;
 	private static Button sync;
+	private static Button addGames;
 	private static ToggleButton toggle;
 	private Issue issue;
 
@@ -84,7 +88,7 @@ public class Main extends Application {
 		// window.initStyle(StageStyle.TRANSPARENT);
 
 		layout = new BorderPane();// main scene is border pane
-		added = new ArrayList<Issue>();// for addComics scene
+		addedIssues = new ArrayList<Issue>();// for addComics scene
 
 		toggle = new ToggleButton("WebView: Off");
 		toggle.setOnAction((event) -> {
@@ -274,8 +278,14 @@ public class Main extends Application {
 		layout.setLeft(leftSide);
 		hbox = new HBox(10);
 		hbox.setPadding(new Insets(10));
-		addButton = new Button("Click here to add");
+		addButton = new Button("Click to add Comics");
 
+		addGames = new Button("Click to add Games");
+		addGames.setOnAction(e -> {
+			new AddGame(addedGames);
+		});
+		
+		
 		refresh = new Button("Refresh Collection");
 		refresh.setOnAction(e -> {
 			updateLeft();
@@ -304,12 +314,12 @@ public class Main extends Application {
 			SQLQuery.fullSync();
 		});
 
-		hbox.getChildren().addAll(addButton, refresh, viewLogin, sync, toggle, quit);
+		hbox.getChildren().addAll(addButton, addGames, refresh, viewLogin, sync, toggle, quit);
 		layout.setTop(hbox);
 
 		addButton.setOnAction(e -> {
-			new AddComic(added);
-			if (!added.isEmpty())
+			new AddComic(addedIssues);
+			if (!addedIssues.isEmpty())
 				updateLeft();
 		});
 		window.setMaximized(true);
@@ -341,33 +351,33 @@ public class Main extends Application {
 //		// System.out.println("jdbc:sqlite:" + System.getProperty("user.dir")
 //		// +"\\DigLongBox.db");
 //		//LocalDB.truncate("Volume");
-//		File file = new File("./DigLongBox.db");
-//		System.out.println(file.isFile());
-//		try {
-//			System.out.println(file.getCanonicalPath());
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		// System.out.println(Main.class.getResource("../application.css"));
-//		launch(args);
-//		CVImage.cleanAllLocalImgs();
-//		// System.out.println(System.getProperty("user.dir"));
-//		System.exit(0);
+		File file = new File("./DigLongBox.db");
+		System.out.println(file.isFile());
+		try {
+			System.out.println(file.getCanonicalPath());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// System.out.println(Main.class.getResource("../application.css"));
+		launch(args);
+		CVImage.cleanAllLocalImgs();
+		// System.out.println(System.getProperty("user.dir"));
+		System.exit(0);
 		
 		//---------------testing-----------------------
-		GBrequest.searchGame("Horizon Zero Dawn");
+		//GBrequest.searchGame("The Legend of Zelda: Breath of the Wild");
 	}
 
 	public static void updateLeft() {
-		if (added.size() != 0) {
-			new IssueLoadScreen(added, allIssues, volPreviews);
+		if (addedIssues.size() != 0) {
+			new IssueLoadScreen(addedIssues, allIssues, volPreviews);
 		}
 		treeView.setRoot(buildRoot("Volumes"));
-		added.clear();
+		addedIssues.clear();
 		backgroundLoadIssues();
 	}
-
+	
 	/**
 	 * This will build a tree root that has the following structure<br>
 	 * <pre>|->Volumes<br></pre>

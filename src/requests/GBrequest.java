@@ -1,6 +1,7 @@
 package requests;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.Future;
@@ -60,7 +61,8 @@ public class GBrequest {
 						.queryString("limit", "100")
 						.queryString("field_list", "name,id,original_release_date,"
 								+ "expected_release_day,platforms,image,deck,"
-								+ "expected_release_month, expected_release_year")
+								+ "expected_release_month, expected_release_year"
+								+ "api_detail_url")
 						.asJsonAsync(new Callback<JsonNode>() {
 							public void completed(HttpResponse<JsonNode> response) {
 								System.out.println("Thread " + Thread.currentThread().getId() + " writing");
@@ -87,25 +89,50 @@ public class GBrequest {
 
 			while (gets.get() < pages) {
 			}
-			
+			if(allResults.get(0).isNull(0))
+				return null;
 			int counter = 0;
 			System.out.println(allResults.get(0).getJSONObject(0));
-			allResults.forEach(currJA ->{
-				int size = currJA.length();
-				for(int i = 0; i < size; i++){
-					gameResults.add(new Game(currJA.getJSONObject(i)));
-					System.out.println(currJA.getJSONObject(i).get("name"));
-				}
-			});
-			Image img = gameResults.get(0).getRemoteIcon();
-			BufferedImage bimg = SwingFXUtils.fromFXImage(img, null);
-			new CrapPopUp(new JFrame(), "Testing", bimg);
+			JSONArray tempJA = allResults.get(0);
+			int size = tempJA.length();
+			if(size > 30){
+				size = 30;
+			}
+			for(int i = 0; i < size; i++){
+				gameResults.add(new Game(tempJA.getJSONObject(i)));
+				System.out.println(tempJA.getJSONObject(i).get("name"));
+			}
+//			allResults.forEach(currJA ->{
+//				int size = currJA.length();
+//				for(int i = 0; i < size; i++){
+//					gameResults.add(new Game(currJA.getJSONObject(i)));
+//					System.out.println(currJA.getJSONObject(i).get("name"));
+//				}
+//			});
+			//Image img = gameResults.get(0).getRemoteScreen();
+			//BufferedImage bimg = SwingFXUtils.fromFXImage(img, null);
+			//new CrapPopUp(new JFrame(), "Testing", bimg);
 			
 		} catch (UnirestException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		return gameResults;
+	}
+	
+	public static JSONObject getFullGame(String api_url){
+		try {
+			response = Unirest.get(baseURL + "/search")
+					.header("Accept", "application/json")
+					.queryString("api_key", api_key)
+					.asJson().getBody();
+		} catch (UnirestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return response.getObject().getJSONObject("results");
 	}
 
 }

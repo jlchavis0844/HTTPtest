@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
+import requests.GBrequest;
 
 public class Game {
 	private String name;
@@ -20,6 +21,14 @@ public class Game {
 	private String id;
 	private String icon_url;
 	private String deck;
+	private String api_detail_url;
+	private String description;
+	private String original_game_rating;
+	private String site_detail_url;
+	private ArrayList<String> characters;
+	private String franchises;
+	private ArrayList<String> genres;
+	private ArrayList<String> publishers;
 	private ArrayList<String> platforms;
 	private JSONObject game;
 	private int cycles = 0;
@@ -27,6 +36,10 @@ public class Game {
 	public Game(JSONObject g) {
 		game = g;
 		platforms = new ArrayList<String>();
+		characters = new ArrayList<String>();
+		genres = new ArrayList<String>();
+		publishers = new ArrayList<String>(); 
+		
 		if (check(game, "id")) {
 			this.id = game.get("id").toString();
 		} else {
@@ -78,17 +91,22 @@ public class Game {
 			if(check(game, "platforms")){ // load and array of all the platforms
 				JSONArray ja = game.getJSONArray("platforms");
 				for(int i = 0; i < ja.length(); i++){
-					
-					platforms.add(ja.get(i).toString());
+					platforms.add(ja.getJSONObject(i).getString("name").toString());
 				}
 			}
+			
+			if(check(game, "api_detail_url")){
+				api_detail_url = game.getString("api_detail_url");
+			} else api_detail_url = null;
 		}
 	}
 
 	public Image getRemoteImage(String urlStr) {
 		URL url = null;
 		BufferedImage img = null;
-		
+		if(urlStr == null || urlStr.equals("")){
+			return null;
+		}
 		try {
 			url = new URL(urlStr);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -108,6 +126,31 @@ public class Game {
 			return getRemoteImage(icon_url);
 		}
 		return null;
+	}
+	
+	public Image getRemoteMedium(){
+		if(check(game, "image") && game.getJSONObject("image")
+				.has("medium_url")){
+			return getRemoteImage(game.getJSONObject("image")
+					.getString("medium_url"));
+		} else return null;
+	}
+	
+	public Image getRemoteThumb(){
+		if(check(game, "image") && game.getJSONObject("image")
+				.has("thumb_url")){
+			return getRemoteImage(game.getJSONObject("image")
+					.getString("thumb_url"));
+		} else return null;
+	}
+	
+	
+	public Image getRemoteScreen(){
+		if(check(game, "image") && game.getJSONObject("image")
+				.has("screen_url")){
+			return getRemoteImage(game.getJSONObject("image")
+					.getString("screen_url"));
+		} else return null;
 	}
 	
 	public String getName() {
@@ -132,7 +175,7 @@ public class Game {
 		this.relDate = relDate;
 	}
 
-	public String getId() {
+	public String getID() {
 		return id;
 	}
 	
@@ -158,11 +201,13 @@ public class Game {
 		this.deck = deck;
 	}
 
-	public ArrayList<String> getPlatforms() {
+	public String getPlatforms() {
 		if(platforms == null){
-			return new ArrayList<String>();
+			return "";
 		}
-		return platforms;
+		String platStr = platforms.toString();
+		platStr = platStr.replaceAll("[\\[\\](){}]","");
+		return platStr;
 	}
 
 	public void setPlatforms(ArrayList<String> platforms) {
@@ -183,6 +228,28 @@ public class Game {
 			return (val != null && val.length() != 0 && !val.equals("null"));
 		} else
 			return false;
+	}
+	
+	public void populate(){
+		game = GBrequest.getFullGame(api_detail_url);
+		init();
+		
+		if(check(game, "description")){
+			description = game.getString("description");
+		} else description = "";
+		
+		if(check(game, "original_game_rating")){
+			JSONArray ja = game.getJSONArray("original_game_rating");
+			for(int i = 0; i < ja.length(); i++){
+				if(ja.getJSONObject(i).getString("name").contains("ESRB")){
+					original_game_rating = ja.getJSONObject(i).getString("name");
+					break;
+				}
+			}
+			if(original_game_rating == null){
+				original_game_rating = "";
+			}
+		} else original_game_rating = "";
 	}
 
 };
