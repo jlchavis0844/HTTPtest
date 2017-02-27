@@ -38,9 +38,11 @@ public class GBrequest {
 					.queryString("resources", "game")
 					.queryString("format", "json")
 					.queryString("limit", "100")
-					.queryString("field_list", "name,id,original_release_date,"
-							+ "expected_release_day,platforms,image,deck" )
+//					.queryString("field_list", "name,id,original_release_date,"
+//							+ "expected_release_day,platforms,image,deck, "
+//							+ "api_detail_url, site_detail_url")
 					.asJson().getBody();
+			
 			int resultNum = response.getObject().getInt("number_of_total_results");
 			int pages = (resultNum/100)+1;
 			
@@ -59,10 +61,10 @@ public class GBrequest {
 						.queryString("resources", "game")
 						.queryString("format", "json")
 						.queryString("limit", "100")
-						.queryString("field_list", "name,id,original_release_date,"
-								+ "expected_release_day,platforms,image,deck,"
-								+ "expected_release_month, expected_release_year"
-								+ "api_detail_url")
+//						.queryString("field_list", "name,id,original_release_date,"
+//								+ "expected_release_day,platforms,image,deck,"
+//								+ "expected_release_month, expected_release_year"
+//								+ "api_detail_url, site_detail_url")
 						.asJsonAsync(new Callback<JsonNode>() {
 							public void completed(HttpResponse<JsonNode> response) {
 								System.out.println("Thread " + Thread.currentThread().getId() + " writing");
@@ -89,6 +91,7 @@ public class GBrequest {
 
 			while (gets.get() < pages) {
 			}
+			
 			if(allResults.get(0).isNull(0))
 				return null;
 			int counter = 0;
@@ -98,8 +101,10 @@ public class GBrequest {
 			if(size > 30){
 				size = 30;
 			}
+			
 			for(int i = 0; i < size; i++){
-				gameResults.add(new Game(tempJA.getJSONObject(i)));
+				JSONObject tempJO = tempJA.getJSONObject(i);
+				gameResults.add(new Game(tempJO));
 				System.out.println(tempJA.getJSONObject(i).get("name"));
 			}
 //			allResults.forEach(currJA ->{
@@ -123,9 +128,10 @@ public class GBrequest {
 	
 	public static JSONObject getFullGame(String api_url){
 		try {
-			response = Unirest.get(baseURL + "/search")
+			response = Unirest.get(api_url)
 					.header("Accept", "application/json")
 					.queryString("api_key", api_key)
+					.queryString("format", "json")
 					.asJson().getBody();
 		} catch (UnirestException e) {
 			// TODO Auto-generated catch block
@@ -133,6 +139,26 @@ public class GBrequest {
 		}
 		
 		return response.getObject().getJSONObject("results");
+	}
+	
+	public static String getHTTPVideo(String api_url){
+		String fileLink = "";
+		try {
+			response = Unirest.get(api_url)
+					.header("Accept", "application/json")
+					.queryString("api_key", api_key)
+					.queryString("format", "json")
+					.asJson().getBody();
+			fileLink = response.getObject().getJSONObject("results")
+					.getString("embed_player");
+					//.getString("low_url");
+			System.out.println("---------------------------------------------"
+					+ ":" + fileLink);
+		} catch (UnirestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return fileLink;
 	}
 
 }

@@ -30,6 +30,7 @@ public class CVImage {
 	private static int cntr;
 	public static final int ISSUE = 0;
 	public static final int VOLUME = 1;
+	public static final int GAME = 2;
 
 	public static void addAllImages(Issue i) {
 
@@ -254,11 +255,13 @@ public class CVImage {
 	 * @throws IOException - could not delete the file
 	 */
 	public static int cleanLocalImgs(int type) throws IOException{
-		String path;
+		String path = "";
 		if(type == CVImage.ISSUE) {
-			path = "./images/issue";
-		} else {
+			path = "./images/game";
+		} else if(type == CVImage.VOLUME) {
 			path = "./images/volume";
+		} else if(type == CVImage.GAME){
+			path = "./images/game";
 		}
 		System.out.println("Starting with " + path);
 		try(Stream<Path> paths = Files.walk(Paths.get(path))){

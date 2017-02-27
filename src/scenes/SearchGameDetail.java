@@ -32,38 +32,52 @@ import model.CharCred;
 import model.Game;
 import javafx.scene.input.MouseEvent;
 
-public class GameDetail extends BorderPane {
+public class SearchGameDetail extends BorderPane {
 	private Button editButton;
 	private ArrayList<CharCred> chars;
 	private String link;
 	private WebView webView;
 	private WebEngine webEngine;
 	private String webLink;
-
-	public GameDetail(Game game, boolean loadWeb) {
+	private StackPane browser;
+	private WebView webplay;
+	private ImageView imageView;
+	private Long start = System.currentTimeMillis();
+	public SearchGameDetail(Game game, boolean loadWeb) {
 		super();
 
+		start = System.currentTimeMillis();// mark start
+		game.populate();
 //		if (!game.isFull())
 //			game.populate();
-
-		// VBox left = new VBox();
-		Label nameLbl = new Label("Name");
-		Label rDateLbl = new Label("Release Date");
-		Label platformLbl = new Label("Writers");
+		imageView = new ImageView();
+		Label nameLbl = new Label("Name"); //1
+		Label pubLbl = new Label("Publisher"); //2
+		Label rDateLbl = new Label("Release Date");//3
+		Label platformLbl = new Label("Platforms");//4
+		Label franchiseLbl = new Label("Franchise");//5
 		// left.getChildren().addAll(volNameLbl,gameNumLbl,nameLbl,cDateLbl,
 		// writerLbl);
-
+		System.out.println("Label setup took : " + (System.currentTimeMillis()-start));
+		
+		String varName = game.getName();
+		String varPub = game.getPublishers();
+		String varDate = game.getRelDate();
+		String varPlat = game.getPlatsLong();
+		String varFran = game.getFranchise();
+		System.out.println("fetching game info setup took : " + (System.currentTimeMillis()-start));
 		// VBox center = new VBox();
-		TextField name = new TextField(game.getName());
-		TextField gameNum = new TextField(game.getGameNum());
-		TextField cDate = new TextField(game.getCoverDate());
-		TextField volName = new TextField(game.getVolumeName());
-		TextField writer = new TextField(game.getPerson("writer"));
-		writer.setEditable(false);
-		Label arcLbl = new Label("Story Arc");
-		TextField arcName = new TextField(game.getArcName());
-		webLink = game.getWebLink();
-
+		TextField name = new TextField(varName);//1
+		name.setPrefWidth(400);
+		TextField publisher = new TextField(varPub);//2
+		publisher.setPrefWidth(400);
+		TextField rDate = new TextField(varDate);//3
+		rDate.setPrefWidth(400);
+		TextField platformTxt = new TextField(varPlat);//4
+		platformTxt.setPrefWidth(400);
+		TextField franchiseTxt = new TextField(varFran);//5
+		franchiseTxt.setPrefWidth(400);
+		System.out.println("textfield setup took : " + (System.currentTimeMillis()-start));
 		// center.getChildren().addAll(volName,gameNum,name,cDate, writer);
 
 		this.setPadding(new Insets(10));
@@ -76,45 +90,36 @@ public class GameDetail extends BorderPane {
 		grid.setVgap(10);
 		grid.setHgap(5);
 
-		grid.add(volNameLbl, 0, 1);
-		grid.add(volName, 1, 1);
+		grid.add(nameLbl, 0, 1);
+		grid.add(name, 1, 1);
 
-		grid.add(gameNumLbl, 0, 2);
-		grid.add(gameNum, 1, 2);
+		grid.add(pubLbl, 0, 2);
+		grid.add(publisher, 1, 2);
 
-		grid.add(cDateLbl, 0, 3);
-		grid.add(cDate, 1, 3);
+		grid.add(rDateLbl, 0, 3);
+		grid.add(rDate, 1, 3);
 
-		grid.add(nameLbl, 0, 4);
-		grid.add(name, 1, 4);
-
-		grid.add(writerLbl, 0, 5);
-		grid.add(writer, 1, 5);
-
-		grid.add(new Label("Artist"), 0, 6);
-		grid.add(new TextField(game.getPerson("art")), 1, 6);
-
-		grid.add(arcLbl, 0, 7);
-		grid.add(arcName, 1, 7);
-
-		editButton = new Button("Save Changes");
-		editButton.setVisible(true);
-		editButton.setOnAction(e -> {
-			LocalDB.update(game.getID(), "name", name.getSelectedText().toString(), 0);
-			LocalDB.update(game.getID(), "game_number", gameNum.getSelectedText().toString(), 0);
-			LocalDB.update(game.getID(), "cover_date", cDate.getSelectedText().toString(), 0);
-			LocalDB.update(game.getID(), "volume", volName.getSelectedText().toString(), 0);
-		});
-
-		grid.add(editButton, 0, 8);
+		grid.add(franchiseLbl, 0, 4);
+		grid.add(franchiseTxt, 1, 4);
+		
+		grid.setPrefWidth(500);
+		System.out.println("text setup took : " + (System.currentTimeMillis()-start));
+//		editButton = new Button("Save Changes");
+//		editButton.setVisible(true);
+//		editButton.setOnAction(e -> {
+//			LocalDB.update(game.getID(), "name", name.getSelectedText().toString(), 0);
+//			LocalDB.update(game.getID(), "game_number", gameNum.getSelectedText().toString(), 0);
+//			LocalDB.update(game.getID(), "cover_date", cDate.getSelectedText().toString(), 0);
+//			LocalDB.update(game.getID(), "volume", volName.getSelectedText().toString(), 0);
+//		});
+//
+//		grid.add(editButton, 0, 8);
 
 		WebView descBox = new WebView();
 		StackPane webBox = new StackPane();
 		webBox.setPadding(new Insets(10));
 		webView = new WebView();
 		webBox.getChildren().add(webView);
-		descBox.setMinHeight(50);
-		descBox.setPrefHeight(200);
 		descBox.autosize();
 		String desc = game.getDescription();
 		Document doc = Jsoup.parse(desc);
@@ -130,27 +135,31 @@ public class GameDetail extends BorderPane {
 				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
 
 		descBox.getEngine().loadContent(desc);
-		descBox.setMaxHeight(300);
-		// descBox.setFontScale(0.75);
 		descBox.getStyleClass().add("browser");
-
-		BufferedImage bi = game.getImage("medium");
-		Image image = SwingFXUtils.toFXImage(bi, null);
-		ImageView imageView = new ImageView(image);
-		imageView.setOnMouseClicked((MouseEvent event) -> {
-			if (loadWeb) {
-				webEngine.load(webLink);
-				setRight(webBox);
-			}
-		});
-
-		imageView.setFitWidth(390);
-		imageView.setFitHeight(600);
+		System.out.println("Done loading description: " + (System.currentTimeMillis()-start));
+		//TODO: change the method to check for local, then get web 
+		
+		webplay = new WebView();
+		webplay.setPrefSize(560,315);
+		String embedLink = game.getVideo();
+		if(embedLink == null || embedLink.equals("")){
+			webplay.setVisible(false);
+		} else {
+			Platform.runLater(new Runnable(){
+				@Override
+				public void run() {
+					webplay.getEngine().load(embedLink);	
+				}
+			});
+		}
+		
+		System.out.println("Done loading webview: " + (System.currentTimeMillis()-start));
 		VBox tempHack = new VBox(10);
 		tempHack.setMinHeight(620);
-		tempHack.setMinWidth(410);
+		tempHack.setPrefWidth(560);
 		tempHack.setAlignment(Pos.CENTER);
 		tempHack.getChildren().add(imageView);
+		tempHack.getChildren().add(webplay);
 		tempHack.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
 				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
 		// setMargin(descBox, new Insets(10));
@@ -158,43 +167,21 @@ public class GameDetail extends BorderPane {
 		// setCenter(center);
 		setCenter(tempHack);
 		String titleTxt = "";
-		titleTxt += game.getVolumeName() + " #" + game.getGameNum();
-		titleTxt += "\t(" + game.getCoverDate() + ")";
+		titleTxt += game.getName();
+		titleTxt += "\t(" + game.getRelDate() + ")";
 		Label title = new Label(titleTxt);
 		title.setStyle("-fx-font: 40px \"Comic Sans\";");
 		setTop(title);
 
 		ScrollPane scrollPane = new ScrollPane();
-		chars = LocalDB.getCharacterList(game.getID());
-		ArrayList<String> charNames = new ArrayList<String>();
-		Collections.sort(charNames);
-		for (CharCred c : chars) {
-			charNames.add(c.getName());
-		}
-		ObservableList<String> data = FXCollections.observableArrayList(charNames);
+		ObservableList<String> data = FXCollections.observableArrayList(game.getPlatsLongArr());
 		ListView<String> listView = new ListView<>(data);
 
 		listView.setStyle("-fx-border-color: #2B2B2B");
-		listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			if(loadWeb){
-				link = null;
-				for (CharCred c : chars) {
-					if (c.getName().equals((String) (newValue))) {
-						link = c.getLink();
-						break;
-					}
-				}
-	
-				Platform.runLater(() -> {
-					webEngine.load(link);
-					setRight(webBox);
-				});
-			}
-			System.out.println("Loading Link..." + link);
-		});
-
-		StackPane browser = new StackPane();
+		
+		browser = new StackPane();
 		browser.setPadding(new Insets(10));
+		browser.setMaxWidth(400);
 
 		browser.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
 				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
@@ -205,21 +192,39 @@ public class GameDetail extends BorderPane {
 		
 		webBox.setStyle("-fx-border-radius: 20 20 20 20; " + "-fx-background-radius: 20 20 20 20; "
 				+ "-fx-background-color: #2B2B2B; " + "-fx-border-color: #BBBBBB;");
-		webEngine = webView.getEngine();
-		webEngine.setJavaScriptEnabled(false);
-
-		if (loadWeb) {
-			setRight(webBox);
-
-			Platform.runLater(() -> {
-				webEngine.load(webLink);
-			});
-		}
 
 		scrollPane.setStyle("-fx-border-color: #2B2B2B");
 		scrollPane.setContent(listView);
 		grid.add(scrollPane, 0, 10, 2, 5);
 		scrollPane.setFitToHeight(true);
 		scrollPane.setFitToWidth(true);
+		
+		System.out.println("**************" + tempHack.getWidth() + "(w) " + tempHack.getHeight() + "h");
+		
+		Platform.runLater(new Runnable(){
+
+			@Override
+			public void run() {
+				Image tImg = game.getRemoteMedium();
+				imageView.setImage(game.getRemoteMedium());
+				System.out.println("Image fetch time: " + (System.currentTimeMillis()-start));
+				double height = java.lang.Math.min(tImg.getHeight(), 500);
+				imageView.setFitHeight(height);
+				double x = tImg.getWidth();
+				double y = tImg.getHeight();
+				double newWidth = (height*x)/y;
+				imageView.setFitWidth(newWidth);
+				System.out.println("Done loading image: " + (System.currentTimeMillis()-start));
+			}
+			
+		});
+	}
+	
+	public StackPane getWebDesc(){
+		return browser;
+	}
+	
+	public void killVideo(){
+		webplay= new WebView();
 	}
 }

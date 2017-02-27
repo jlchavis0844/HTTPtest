@@ -259,6 +259,12 @@ The collection LIST (not tree)
     -fx-text-fill: white;
 }
 
+.list-cell:selected{
+	-fx-border-width:5px;
+    -fx-border-color:blue;
+}
+
+
 .combo-box .list-cell 
 {
     -fx-background: #3C3F41;

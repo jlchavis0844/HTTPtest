@@ -18,7 +18,6 @@ public class GameResult extends HBox {
 	private Game game;
 	private WebView webView;
 	private WebEngine webEngine;
-	private W
 	
 	public GameResult(Game game) {
 		super();
@@ -27,7 +26,9 @@ public class GameResult extends HBox {
 		this.setMaxWidth(500);
 		setMinWidth(250);
 		text = new Label();
-		String info = game.getName() + "\n" + game.getRelDate() + "\n" + game.getPlatforms() +
+		text.setWrapText(true);
+		text.setMaxWidth(300);
+		String info = game.getName() + "\n" + game.getRelDate() + "\n" + game.getPlatsLong() +
 				"\n" + game.getDeck();
 		text.setText(info);
 		Image image = game.getRemoteThumb();

@@ -1,7 +1,9 @@
 package scenes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import model.*;
 import requests.CVrequest;
@@ -30,7 +32,6 @@ import localDB.LocalDB;
 
 @SuppressWarnings("restriction")
 public class AddGame {
-	private Button backButton;
 	private Button removeButton;
 	private Button srchButton;
 	private Button addButton;
@@ -41,18 +42,25 @@ public class AddGame {
 	private TextField platform;
 	private ScrollPane scPane;
 	private ListView<GameResult> list;
+	private Map<String,SearchGameDetail> details;
 	private List<Game> addList;
 	private Stage window;
 	private final ProgressBar pb;
-	private double added;
+	private double added = 0.0;
+	private SearchGameDetail currGameDetail;
+	private Map<String, Game> addMap;
+	private Game selectedGame;
 
-	public AddGame(List<Game> added) {
+	public AddGame(List<Game> addList) {
+		addMap = new HashMap<String, Game>();
+		this.addList = addList;
+		details = new HashMap<String,SearchGameDetail>();
 		pb = new ProgressBar(0.0);
 		pb.setPrefWidth(200);
 		pb.setVisible(false);
-		addList = added;
+		
 		window = new Stage();
-		window.initStyle(StageStyle.UNDECORATED);
+		//window.initStyle(StageStyle.UNDECORATED);
 		window.setTitle("Add Games!");
 		window.initModality(Modality.APPLICATION_MODAL);
 
@@ -60,31 +68,45 @@ public class AddGame {
 			e.consume();
 			closeThis();
 		});
- 
+		
 		layout = new BorderPane();
+		
 		topBox = new HBox(10);
 		list = new ListView<GameResult>();
-		//list.setMinWidth(300);
-		//list.setMaxWidth(1200);
-		list.setFixedCellSize(150);
-		list.setMinHeight(500);
-
 		list.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<GameResult>() {
 			@Override
 			public void changed(ObservableValue<? extends GameResult> observable, GameResult oldValue,
 					GameResult newValue) {
+				Long start; // timing purposes
+				start = System.currentTimeMillis();// mark start
 				String gID = null;
 				GameResult temp = list.getSelectionModel().getSelectedItem();
-
+				selectedGame = temp.getGame();
 				if (temp != null) {
 					gID = temp.getGameID();
 				}
-
+				
+				if(details.containsKey(gID)){
+					currGameDetail = details.get(gID);
+				} else {
+					currGameDetail = new SearchGameDetail(temp.getGame(), false);
+					details.put(gID, currGameDetail);				
+				}
+				
 				System.out.println("Fetching " + gID);
-				layout.setRight(new ImageView(temp.getGame().getRemoteMedium()));
-				layout.setCenter(new WebView());
-				backButton.setDisable(false);
-				addButton.setDisable(true);
+				//layout.setRight(new ImageView(temp.getGame().getRemoteMedium()));
+				
+				layout.setCenter(currGameDetail);
+				layout.setRight(currGameDetail.getWebDesc());
+				
+				if(addMap.containsKey(gID)){
+					addButton.setDisable(true);
+					removeButton.setDisable(false);
+				} else {
+					addButton.setDisable(false);
+					removeButton.setDisable(true);
+				}
+				System.out.println("total time to load detail: " + (System.currentTimeMillis() - start));
 			}
 		});
 
@@ -125,25 +147,21 @@ public class AddGame {
 
 		srchButton = new Button("Search");
 		addButton = new Button("Add Game");
-		backButton = new Button("Back");
 		removeButton = new Button("Remove");
 		//new Button("Delete");
 		doneButton = new Button("Done Adding");
 		addButton.setDisable(true);
-		backButton.setDisable(true);
 		removeButton.setDisable(true);
 
 		addButton.setOnAction(e -> {
-			Game gSel = list.getSelectionModel().getSelectedItem().getGame();
-			if (gSel != null) {
-				System.out.println("Adding " + gSel.getName());
+			if (selectedGame != null) {
+				System.out.println("Adding " + selectedGame.getName());
 			} else
 				System.out.println("game is null");
 
-			addList.add(gSel);
+			addMap.put(selectedGame.getID(), selectedGame);
 			addButton.setDisable(true);
 			removeButton.setDisable(false);
-			backButton.setDisable(false);
 		});
 
 		srchButton.setOnAction(e -> {
@@ -151,6 +169,8 @@ public class AddGame {
 				pb.setVisible(true);
 				addButton.setDisable(true);
 				scPane.setContent(list);
+				list.setMaxWidth(scPane.getWidth()-5);
+				list.setMaxHeight(scPane.getHeight()-5);
 				System.out.println(input.getText());
 				gameSearch(input.getText(), platform.getText());
 				Platform.runLater(() -> {
@@ -160,20 +180,10 @@ public class AddGame {
 
 		});
 
-		backButton.setOnAction(e -> {
-			addButton.setDisable(true);
-			scPane.setContent(list);
-			backButton.setDisable(true);
-			removeButton.setDisable(true);
-			list.getSelectionModel().clearAndSelect(-1);
-			backButton.fire();
-		});
-
 		removeButton.setOnAction(e -> {
-			addList.remove(list.getSelectionModel().getSelectedItem().getGame());
+			addMap.remove(selectedGame.getID());
 			removeButton.setDisable(true);
 			addButton.setDisable(false);
-			backButton.setDisable(false);
 			Platform.runLater(() -> {
 				list.requestFocus();
 			});
@@ -183,7 +193,7 @@ public class AddGame {
 			closeThis();
 		});
 
-		topBox.getChildren().addAll(input, platform, srchButton, addButton, removeButton, backButton, doneButton, pb);
+		topBox.getChildren().addAll(input, platform, srchButton, addButton, removeButton, doneButton, pb);
 
 		// layout.setPadding(new javafx.geometry.Insets(10));
 		layout.setTop(topBox);
@@ -247,6 +257,11 @@ public class AddGame {
 		boolean temp = ConfirmBox.display("Close Add Game?", "Are you done adding games?");
 		if (temp) {
 			window.close();
+			if(currGameDetail != null){
+			currGameDetail.killVideo();
+			addList.clear();
+			addList.addAll(addMap.values());
+			}
 		}
 	}
 }

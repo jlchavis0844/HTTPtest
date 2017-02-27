@@ -21,7 +21,9 @@ import org.json.JSONObject;
 import model.Issue;
 import model.Volume;
 import model.CharCred;
+import model.Game;
 import requests.CVImage;
+import requests.GBImage;
 import requests.SQLQuery;
 import scenes.VolumePreview;
 
@@ -94,6 +96,7 @@ public class LocalDB {
 	private static Statement stat;
 	public final static int ISSUE = 0;
 	public final static int VOLUME = 1;
+	public final static int  GAME = 2;
 
 	/**
 	 * Inserts issue along with corresponding volume, if needed and fetches aand
@@ -268,6 +271,87 @@ public class LocalDB {
 		return true;
 	}
 
+	public static boolean addGame(Game game) {
+		try {
+			conn = DriverManager.getConnection(url);
+			stat = conn.createStatement();
+
+			String id = game.getID();
+			JSONObject jo = game.getGame();
+			Date date = new Date();
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
+			String formattedDate = sdf.format(date);
+
+			jo.put("timeStamp", formattedDate);
+			jo.put("JSON", jo.toString());
+
+			String[] names = JSONObject.getNames(jo);
+			String qNames = "INSERT INTO game (";
+			String qVals = "VALUES (";
+
+			int nameNum = names.length;
+			ArrayList<String> goodNames = new ArrayList<>();
+			ArrayList<String> goodValues = new ArrayList<>();
+			String value = "";
+			String currName = "";
+
+			for (int i = 0; i < nameNum; i++) {
+				currName = names[i];
+				if (!jo.isNull(currName) && !currName.equals("image")) {
+					value = jo.get(names[i]).toString();
+					if (!value.equals("[]")) {
+						goodNames.add(names[i]);
+						goodValues.add(jo.get(names[i]).toString());
+					}
+				}
+			}
+
+			nameNum = goodNames.size();
+			for (int i = 0; i < nameNum; i++) {
+				if (i != nameNum - 1) {
+					qNames += (goodNames.get(i) + ", ");
+					qVals += (" ? ,");
+				} else {
+					qNames += (goodNames.get(i) + ") ");
+					qVals += (" ? );");
+				}
+			}
+
+			String sql = qNames + qVals;
+			System.out.println(sql);
+			PreparedStatement pre = conn.prepareStatement(sql);
+
+			for (int i = 0; i < nameNum; i++) {
+				pre.setString((i + 1), goodValues.get(i));
+			}
+
+			pre.executeUpdate();
+
+			GBImage.addGameImg(game, GBImage.MediumSize);
+			GBImage.addGameImg(game, GBImage.ThumbSize);
+
+			// printTable("game");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (conn.isClosed() == false) {
+					conn.close();
+				}
+				// if (stat.isClosed() == false) {
+				// stat.close();
+				// }
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		return true;
+	}
+	
+	
 	/**
 	 * Checks to see if the given ID is in the data base for given object
 	 * 
@@ -284,10 +368,11 @@ public class LocalDB {
 			Statement stat = conn.createStatement();
 
 			String table = "";// choose the table
-			if (type == 0) {
+			if (type == GBImage.ISSUE) {
 				table = "issue";
-			} else
+			} else if(type == GBImage.VOLUME){
 				table = "volume";
+			} else table = "game";
 
 			// Check to see if the issue/volume has been added
 			String sql = "SELECT 1 FROM " + table + " WHERE id = '" + id + "';";
@@ -334,13 +419,21 @@ public class LocalDB {
 	 */
 	public static boolean update(String id, String field, String value, int type) {
 		int count = 0;
+		String table = "";// choose the table
+		if (type == GBImage.ISSUE) {
+			table = "issue";
+		} else if(type == GBImage.VOLUME){
+			table = "volume";
+		} else table = "game";
+
+		
 		try {
 			if (!exists(id, type))
 				return false;
 			conn = DriverManager.getConnection(url);
 			Statement stat = conn.createStatement();
 
-			String sql = "UPDATE issue SET " + field + " = ? WHERE id = ?";
+			String sql = "UPDATE " + table + " SET " + field + " = ? WHERE id = ?";
 			PreparedStatement pre = conn.prepareStatement(sql);
 			pre.setString(1, value);
 			pre.setString(2, id);
@@ -439,7 +532,13 @@ public class LocalDB {
 		try {
 			conn = DriverManager.getConnection(url);
 			stat = conn.createStatement();
-			String table = (type == 0) ? "issue" : "volume";
+			String table = "";// choose the table
+			if (type == GBImage.ISSUE) {
+				table = "issue";
+			} else if(type == GBImage.VOLUME){
+				table = "volume";
+			} else table = "game";
+
 			String query = "SELECT COUNT(*) FROM " + table + " WHERE JSON LIKE ?;";
 
 			PreparedStatement pre = conn.prepareStatement(query);
@@ -532,6 +631,39 @@ public class LocalDB {
 		return iList;
 	}
 
+	public static ArrayList<Game> getAllGames() {
+		ArrayList<Game> gList = new ArrayList<Game>();
+		try {
+			conn = DriverManager.getConnection(url);
+			stat = conn.createStatement();
+
+			String sql = "SELECT JSON FROM game;";
+			PreparedStatement pre = conn.prepareStatement(sql);
+
+			ResultSet rs = pre.executeQuery();
+
+			String val = "";
+			JSONObject tObj = null;
+			Game tGame = null;
+
+			while (rs.next()) {
+				val = rs.getString(1);
+				tObj = new JSONObject(val);
+				tGame = new Game(tObj);
+				gList.add(tGame);
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (gList.size() == 0)
+			return null;
+		return gList;
+	}
+	
+	
 	/**
 	 * return an ArrayList<Issue> by authors based on order. if order is true,
 	 * ascendence if order is false, descendence
@@ -930,6 +1062,41 @@ public class LocalDB {
 		}
 		return false;
 	}
+	
+	public static boolean deleteGameByID(String inputID) {
+
+		if (inputID.chars().allMatch(Character::isDigit)) {
+
+			try {
+				conn = DriverManager.getConnection(url);
+				stat = conn.createStatement();
+
+				String sql = "DELETE FROM game WHERE id = ?;";
+				PreparedStatement pre = conn.prepareStatement(sql);
+				pre.setString(1, inputID);
+				if (pre.executeUpdate() == 0) {
+					System.err.println("Failed to delete " + inputID);
+					return false;
+				} else {
+					System.out.println("Deleted " + inputID);
+				}
+
+				/**
+				 * delete the issue remotely
+				 */
+				ArrayList<String> delList = new ArrayList<>();
+				delList.add(inputID);
+				SQLQuery.removeIssues(delList);
+
+			} catch (SQLException e) {
+				System.err.println("SQLException trying to delete volume by id: " + inputID);
+				e.printStackTrace();
+			}
+
+		}
+		return false;
+	}
+	
 
 	public static boolean deleteVolumeByName(String inputName) {
 		try {

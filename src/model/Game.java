@@ -25,17 +25,21 @@ public class Game {
 	private String description;
 	private String original_game_rating;
 	private String site_detail_url;
+	private String videoLink;
 	private ArrayList<String> characters;
-	private String franchises;
+	private String franchise;
 	private ArrayList<String> genres;
 	private ArrayList<String> publishers;
-	private ArrayList<String> platforms;
+	private ArrayList<String> platsShort;
+	private ArrayList<String> platsLong;
 	private JSONObject game;
 	private int cycles = 0;
+	private static boolean full = false;
 	
 	public Game(JSONObject g) {
 		game = g;
-		platforms = new ArrayList<String>();
+		platsShort = new ArrayList<String>();
+		platsLong = new ArrayList<String>();
 		characters = new ArrayList<String>();
 		genres = new ArrayList<String>();
 		publishers = new ArrayList<String>(); 
@@ -63,21 +67,21 @@ public class Game {
 				deck = null;
 			
 			System.out.println(game.get("original_release_date").equals(null));
-			
+
 			if(game.has("original_release_date") &&//check and add release date
-					game.get("original_release_date").equals(null)){
+					game.isNull("original_release_date")){
 				if(game.has("expected_release_day") &&
 				   game.has("expected_release_month") &&
 				   game.has("expected_release_year") &&
-				   !game.getJSONObject("expected_release_day").equals(null) &&
-				   !game.getJSONObject("expected_release_month").equals(null) &&
-				   !game.getJSONObject("expected_release_year").equals(null)){
+				   !game.isNull("expected_release_day") &&
+				   !game.isNull("expected_release_month") &&
+				   !game.isNull("expected_release_year")){
 					relDate = game.getInt("expected_release_year") + "-" + 
 							  game.getInt("expected_release_month") + "-" + 
 				   			  game.getInt("expected_release_day");
 				} else relDate = null;
 			} else if(game.has("original_release_date") && 
-					!game.get("original_release_date").equals(null)){
+					!game.isNull("original_release_date")){
 				String[] parts = game.get("original_release_date").toString().split("[,\\s\\-:\\?]");
 				relDate = parts[0] + "-" + parts[1] + "-" + parts[2]; 
 			} else relDate = null;
@@ -86,18 +90,7 @@ public class Game {
 				if(!game.getJSONObject("image").getString("icon_url").equals(null)){
 					icon_url = game.getJSONObject("image").getString("icon_url");
 				} else icon_url = null;
-			}
-			
-			if(check(game, "platforms")){ // load and array of all the platforms
-				JSONArray ja = game.getJSONArray("platforms");
-				for(int i = 0; i < ja.length(); i++){
-					platforms.add(ja.getJSONObject(i).getString("name").toString());
-				}
-			}
-			
-			if(check(game, "api_detail_url")){
-				api_detail_url = game.getString("api_detail_url");
-			} else api_detail_url = null;
+			}			
 		}
 	}
 
@@ -142,8 +135,7 @@ public class Game {
 			return getRemoteImage(game.getJSONObject("image")
 					.getString("thumb_url"));
 		} else return null;
-	}
-	
+	}	
 	
 	public Image getRemoteScreen(){
 		if(check(game, "image") && game.getJSONObject("image")
@@ -201,17 +193,36 @@ public class Game {
 		this.deck = deck;
 	}
 
-	public String getPlatforms() {
-		if(platforms == null){
+	public String getPlatsShort() {
+		if(platsShort == null){
 			return "";
 		}
-		String platStr = platforms.toString();
+		String platStr = platsShort.toString();
 		platStr = platStr.replaceAll("[\\[\\](){}]","");
 		return platStr;
 	}
-
-	public void setPlatforms(ArrayList<String> platforms) {
-		this.platforms = platforms;
+	
+	public ArrayList<String> getPlatsShortArr(){
+		if(platsShort == null){
+			return new ArrayList<String>();
+		} else return platsShort;
+		
+	}
+	
+	public String getPlatsLong() {
+		if(platsLong == null){
+			return "";
+		}
+		String platStr = platsLong.toString();
+		platStr = platStr.replaceAll("[\\[\\](){}]","");
+		return platStr;
+	}
+	
+	public ArrayList<String> getPlatsLongArr(){
+		if(platsLong == null){
+			return new ArrayList<String>();
+		} else return platsLong;
+		
 	}
 
 	public JSONObject getGame() {
@@ -231,6 +242,11 @@ public class Game {
 	}
 	
 	public void populate(){
+		full = true;
+		if(check(game, "api_detail_url")){
+			api_detail_url = game.getString("api_detail_url");
+		} else api_detail_url = null;
+		
 		game = GBrequest.getFullGame(api_detail_url);
 		init();
 		
@@ -250,6 +266,126 @@ public class Game {
 				original_game_rating = "";
 			}
 		} else original_game_rating = "";
+		
+		if(check(game, "platforms")){ // load and array of all the playform's abbreviations
+			JSONArray ja = game.getJSONArray("platforms");
+			for(int i = 0; i < ja.length(); i++){
+				platsShort.add(ja.getJSONObject(i).getString("abbreviation"));
+				platsLong.add(ja.getJSONObject(i).getString("name"));
+			}
+		}
+		
+		if(check(game, "publishers")){ // load and array of all the publishers
+			JSONArray ja = game.getJSONArray("publishers");
+			for(int i = 0; i < ja.length(); i++){
+				publishers.add(ja.getJSONObject(i).getString("name"));
+			}
+		}
+		
+		if(check(game, "franchises") && !game.getJSONArray("franchises").isNull(0) 
+				&& !game.getJSONArray("franchises").getJSONObject(0).isNull("name") ){
+			franchise = game.getJSONArray("franchises").getJSONObject(0).getString("name");
+		} else franchise = null;
+		
+		if(check(game, "description")){
+			description = game.getString("description");
+		} else description = null;
+		
+		if(check(game, "videos") && !game.getJSONArray("videos").isNull(0)){
+			String tempLink = game.getJSONArray("videos").getJSONObject(0).getString("api_detail_url");
+			videoLink = GBrequest.getHTTPVideo(tempLink);
+		} else videoLink = null;
+		
+		if(check(game, "site_detail_url")){
+			site_detail_url = game.getString("site_detail_url");
+		} else site_detail_url = null;
+		
+	}
+	
+	public String getPublishers(){
+		if(publishers != null){
+			return publishers.toString().replaceAll("[\\[\\](){}]","");
+		} else return "";
+	}
+	
+	public String getFranchise(){
+		if(franchise != null){
+			return franchise;
+		} else return "";
+	}
+	
+	public String getDescription(){
+		if(description != null){
+			return description;
+		} else return "";
+	}
+	
+	public String getVideo(){
+		if(videoLink != null){
+			return videoLink;
+		} else return "";
+	}
+	
+	public boolean equals(Game rhs){
+		return id.equals(rhs.getID());
+	}
+	
+	public Image getImage(String type){
+		return getRemoteThumb();
+	}
+	
+	public boolean isFull(){
+		return full;
 	}
 
+	public String getSiteURL(){
+		if(site_detail_url != null){
+			return site_detail_url;
+		} else return "";
+	}
+	
+	public String getImgURL(String size){
+		String URL = "";
+		
+		if(check(game, "image")){
+			JSONObject jo = game.getJSONObject("image");
+			
+			switch(size){
+
+			case "icon":
+				URL = jo.getString("icon_url");
+				break;
+				
+			case "medium":
+				URL = jo.getString("medium_url");
+				break;
+				
+			case "small":
+				URL = jo.getString("small_url");
+				break;
+				
+			case "super":
+				URL = jo.getString("super_url");
+				break;
+				
+			case "thumb":
+				URL = jo.getString("thumb_url");
+				break;
+				
+			case "tiny":
+				URL = jo.getString("tiny_url");
+				break;
+				
+			case "screen":
+				URL = jo.getString("screen_url");
+				break;
+			
+			default:
+				URL = "";
+				break;
+			}
+		}
+		return URL;
+	}
+	
 };

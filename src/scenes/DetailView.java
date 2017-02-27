@@ -109,7 +109,7 @@ public class DetailView extends BorderPane {
 		});
 
 		grid.add(editButton, 0, 8);
-
+		
 		WebView descBox = new WebView();
 		StackPane webBox = new StackPane();
 		webBox.setPadding(new Insets(10));

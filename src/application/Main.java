@@ -21,12 +21,12 @@ import model.Game;
 import model.Issue;
 import model.Volume;
 import requests.CVImage;
-import requests.CVrequest;
-import requests.GBrequest;
 import requests.SQLQuery;
 import scenes.AddComic;
 import scenes.AddGame;
 import scenes.DetailView;
+import scenes.GameDetail;
+import scenes.GamePreview;
 import scenes.IssueLoadScreen;
 import scenes.IssuePreview;
 import scenes.LogIn;
@@ -38,7 +38,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-import javafx.scene.image.Image;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.TreeItem;
@@ -51,7 +50,7 @@ import javafx.scene.layout.*;
  * @author jlchavis
  *
  */
-@SuppressWarnings({ "rawtypes", "unchecked","restriction"})
+@SuppressWarnings({ "rawtypes", "unchecked"})
 public class Main extends Application {
 	private Stage window;// main stage
 	private BorderPane layout;// layout for window
@@ -61,6 +60,7 @@ public class Main extends Application {
 	private static ArrayList<Volume> allVols;// holds a list of all volumes, apart from issues
 	private static ArrayList<Game> allGames;// holds a list of all games from the database
 	private static List<VolumePreview> volPreviews;// holds VolumePreviews generated for every volume
+	private static List<GamePreview> gamePreviews;
 	private static ScrollPane leftScroll;// holds the tree that lists volumes
 	private HBox hbox;// for the top row of border frame
 	private Button addButton; // launches addComic scene
@@ -74,6 +74,11 @@ public class Main extends Application {
 	private static Button addGames;
 	private static ToggleButton toggle;
 	private Issue issue;
+	
+	//**************game collection setup ***************
+	private Tab gameTab;
+	private ScrollPane gameScrollPane;
+	private static TreeView gameTreeView;
 
 	/**
 	 * launched from main(), starts main scene/ui
@@ -86,10 +91,14 @@ public class Main extends Application {
 		window = primaryStage;// set as primary stage
 		window.setTitle("Digital Long Box");// set title
 		// window.initStyle(StageStyle.TRANSPARENT);
+		
+		gameTab = new Tab("  Games  ");
+		allGames = new ArrayList<>();
+		gamePreviews = new ArrayList<>();
 
 		layout = new BorderPane();// main scene is border pane
 		addedIssues = new ArrayList<Issue>();// for addComics scene
-
+		addedGames = new ArrayList<Game>();
 		toggle = new ToggleButton("WebView: Off");
 		toggle.setOnAction((event) -> {
 			if (toggle.isSelected()) {
@@ -136,6 +145,11 @@ public class Main extends Application {
 		treeView.setPrefHeight(700);
 		treeView.setPrefWidth(500);
 		treeView.setScaleShape(true);
+		
+		gameTreeView = new TreeView<GamePreview>(buildGameRoot());
+		gameTreeView.setPrefHeight(914);
+		gameTreeView.setPrefWidth(500);
+		gameTreeView.setScaleShape(true);
 		
 		/**
 		 * Click listener to expand and show issues checks if clicking on volume
@@ -195,8 +209,11 @@ public class Main extends Application {
 		issHeader.getChildren().add(leftSearch);
 
 		leftScroll = new ScrollPane();
+		gameScrollPane = new ScrollPane();
 		leftScroll.setContent(treeView);
+		gameScrollPane.setContent(gameTreeView);
 		leftScroll.setPadding(new Insets(10));
+		gameScrollPane.setPadding(new Insets(10));
 
 		/**
 		 * Lets go with a tabbed view
@@ -205,9 +222,9 @@ public class Main extends Application {
 		tabs.setPadding(new Insets(10));
 		// tabs.getStyleClass().add("floating");
 		tabs.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-		Tab allIssTab = new Tab("  Collection  ");
+		Tab allIssTab = new Tab("  Comics  ");
 		allIssTab.setContent(leftScroll);
-		Tab srchTab = new Tab("  Search Collection  ");
+		Tab srchTab = new Tab("  Search  ");
 		// Need another scrollPane and vbox to hold the seaarach results.
 		VBox srchVBox = new VBox(10);
 		srchVBox.setFillWidth(true);
@@ -223,8 +240,15 @@ public class Main extends Application {
 		srchVBox.getChildren().addAll(srchScroll);
 		srchVBox.setFillWidth(true);
 		srchTab.setContent(srchVBox);
-
-		tabs.getTabs().addAll(allIssTab, srchTab);
+		
+		//********************Adding the game tab *******************************
+		VBox gameVBox = new VBox(10);
+		gameVBox.setFillWidth(true);
+		gameVBox.setPrefHeight(1000);
+		gameVBox.getChildren().add(gameTreeView);
+		gameTab.setContent(gameVBox);
+		
+		tabs.getTabs().addAll(allIssTab,gameTab,srchTab);
 		leftSide.getChildren().add(tabs);
 		// leftSide.setStyle("-fx-border-color: grey");
 
@@ -240,6 +264,20 @@ public class Main extends Application {
 						System.out.println("something went wrong loading issue");
 				} else
 					System.out.println("something went wrong loading issue");
+			}
+		});
+		
+		gameTreeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem>(){
+			@Override
+			public void changed(ObservableValue<? extends TreeItem> observable, TreeItem oldValue, TreeItem newValue) {
+				// TODO Auto-generated method stub
+				TreeItem<GamePreview> gamePreview = (TreeItem<GamePreview>) gameTreeView.getSelectionModel().getSelectedItem();
+				if(gamePreview != null){
+					Game tempGame = gamePreview.getValue().getGame();
+					if(tempGame != null){
+						layout.setRight(new GameDetail(tempGame, toggle.isSelected()));
+					} else System.err.println("Null item selected");
+				} else System.err.println("Null item selected");
 			}
 		});
 
@@ -283,6 +321,17 @@ public class Main extends Application {
 		addGames = new Button("Click to add Games");
 		addGames.setOnAction(e -> {
 			new AddGame(addedGames);
+			System.out.println("Adding the following games:");
+			addedGames.forEach(currGame -> {
+				System.out.print(currGame.getName() + "\t");
+			});
+			
+			//TODO: erase below, for debugging
+			addedGames.forEach(currGame -> {
+				allGames.add(currGame);
+				gamePreviews.add(new GamePreview(currGame));
+			});
+			gameTreeView.setRoot(buildGameRoot());
 		});
 		
 		
@@ -333,10 +382,13 @@ public class Main extends Application {
 		window.setScene(scene);
 		window.show();
 		leftScroll.setFitToHeight(true);
+		gameScrollPane.setFitToHeight(true);
 		leftScroll.setFitToWidth(true);
+		gameScrollPane.setFitToWidth(true);
 		System.out.println(
 				"Done loading after " + (System.currentTimeMillis() - start) + ", starting background loading");
 		backgroundLoadVols();
+
 	}
 
 	public static void main(String[] args) {
@@ -374,6 +426,7 @@ public class Main extends Application {
 			new IssueLoadScreen(addedIssues, allIssues, volPreviews);
 		}
 		treeView.setRoot(buildRoot("Volumes"));
+		gameTreeView.setRoot(buildGameRoot());
 		addedIssues.clear();
 		backgroundLoadIssues();
 	}
@@ -399,6 +452,23 @@ public class Main extends Application {
 			TreeItem temp = new VolumeCell(vp);
 			root.getChildren().add(temp);
 			System.out.println("\tadded: " + vp.getVolName() + ": " + vp.getVolume().getID());
+		}
+		return root;
+	}
+	
+	public static TreeItem buildGameRoot() {
+		TreeItem root = new TreeItem<GamePreview>();
+
+		root.setValue("Your Games");//not used f
+		root.setExpanded(true);
+		System.out.println("loading the following gmaes: ");
+		//LocalDB.sortVolumePreviews(volPreviews, true);
+		for (GamePreview gp : gamePreviews) {
+			// vp.update(allIssues);
+
+			TreeItem temp = new GameCell(gp);
+			root.getChildren().add(temp);
+			System.out.println("\tadded: " + gp.getGame().getName() + ": " + gp.getGame().getID());
 		}
 		return root;
 	}
@@ -546,6 +616,7 @@ public class Main extends Application {
 
 		LocalDB.sortVolumes(allVols);
 		treeView.setRoot(buildRoot("Volumes"));
+		gameTreeView.setRoot(buildGameRoot());
 		backgroundLoadVols();
 	}
 }
