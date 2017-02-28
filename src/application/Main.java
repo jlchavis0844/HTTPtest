@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,9 +59,10 @@ public class Main extends Application {
 	private static ArrayList<Game> addedGames; // holds all games from the local DB
 	private static ArrayList<Issue> allIssues;// holds all issues from the local DB
 	private static ArrayList<Volume> allVols;// holds a list of all volumes, apart from issues
-	private static ArrayList<Game> allGames;// holds a list of all games from the database
+	private static HashMap<String, Game> allGames;// holds a list of all games from the database
 	private static List<VolumePreview> volPreviews;// holds VolumePreviews generated for every volume
 	private static List<GamePreview> gamePreviews;
+	private static HashMap<String, GameDetail> gameDetails;
 	private static ScrollPane leftScroll;// holds the tree that lists volumes
 	private HBox hbox;// for the top row of border frame
 	private Button addButton; // launches addComic scene
@@ -92,9 +94,16 @@ public class Main extends Application {
 		window.setTitle("Digital Long Box");// set title
 		// window.initStyle(StageStyle.TRANSPARENT);
 		
-		gameTab = new Tab("  Games  ");
-		allGames = new ArrayList<>();
+		gameTab = new Tab("\tGames\t");
+		allGames = new HashMap<String, Game>();
+		ArrayList<Game> tArr = LocalDB.getAllGames();
 		gamePreviews = new ArrayList<>();
+		gameDetails = new HashMap<String, GameDetail>();
+		tArr.forEach(currGame ->{
+			allGames.put(currGame.getID(), currGame);
+			gameDetails.put(currGame.getID(), new GameDetail(currGame, false));
+			gamePreviews.add(new GamePreview(currGame));
+		});
 
 		layout = new BorderPane();// main scene is border pane
 		addedIssues = new ArrayList<Issue>();// for addComics scene
@@ -105,6 +114,14 @@ public class Main extends Application {
 				toggle.setText("WebView: On");
 			} else {
 				toggle.setText("WebView: Off");
+			}
+			
+			if(gameTab.isSelected()){
+				GamePreview gPre = (GamePreview) gameTreeView.getSelectionModel().getSelectedItem();
+				if(gPre != null){
+					
+				}
+				
 			}
 			if (issue != null) {
 				layout.setRight(new DetailView(issue, toggle.isSelected()));
@@ -150,6 +167,7 @@ public class Main extends Application {
 		gameTreeView.setPrefHeight(914);
 		gameTreeView.setPrefWidth(500);
 		gameTreeView.setScaleShape(true);
+		
 		
 		/**
 		 * Click listener to expand and show issues checks if clicking on volume
@@ -328,7 +346,7 @@ public class Main extends Application {
 			
 			//TODO: erase below, for debugging
 			addedGames.forEach(currGame -> {
-				allGames.add(currGame);
+				allGames.put(currGame.getID(),currGame);
 				gamePreviews.add(new GamePreview(currGame));
 			});
 			gameTreeView.setRoot(buildGameRoot());
@@ -464,8 +482,6 @@ public class Main extends Application {
 		System.out.println("loading the following gmaes: ");
 		//LocalDB.sortVolumePreviews(volPreviews, true);
 		for (GamePreview gp : gamePreviews) {
-			// vp.update(allIssues);
-
 			TreeItem temp = new GameCell(gp);
 			root.getChildren().add(temp);
 			System.out.println("\tadded: " + gp.getGame().getName() + ": " + gp.getGame().getID());

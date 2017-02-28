@@ -292,7 +292,8 @@ public class Game {
 		} else description = null;
 		
 		if(check(game, "videos") && !game.getJSONArray("videos").isNull(0)){
-			String tempLink = game.getJSONArray("videos").getJSONObject(0).getString("api_detail_url");
+			String tempLink = game.getJSONArray("videos").getJSONObject(0)
+					.getString("api_detail_url");
 			videoLink = GBrequest.getHTTPVideo(tempLink);
 		} else videoLink = null;
 		
@@ -300,6 +301,17 @@ public class Game {
 			site_detail_url = game.getString("site_detail_url");
 		} else site_detail_url = null;
 		
+		if(check(game, "characters")){
+			if(characters == null){
+				characters = new ArrayList<String>();
+			}
+			
+			JSONArray ja = game.getJSONArray("characters");
+			
+			for(int i = 0; i < ja.length(); i++){
+				characters.add(ja.getJSONObject(i).getString("name"));
+			}
+		}
 	}
 	
 	public String getPublishers(){
@@ -342,6 +354,10 @@ public class Game {
 		if(site_detail_url != null){
 			return site_detail_url;
 		} else return "";
+	}
+	
+	public void setOwned(String value){
+		game.put("OwnedOn", value);
 	}
 	
 	public String getImgURL(String size){
