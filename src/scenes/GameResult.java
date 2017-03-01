@@ -8,17 +8,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import model.Game;
 
 public class GameResult extends HBox {
 	private Label text;
 	private ImageView thumb;
 	private Game game;
-	private WebView webView;
-	private WebEngine webEngine;
-	
 	public GameResult(Game game) {
 		super();
 		this.game = game;

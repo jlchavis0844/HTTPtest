@@ -519,7 +519,7 @@ public class Main extends Application {
 	 */
 	public static void backgroundLoadVols() {
 		System.out.println("Starting background load of volumes");
-		int volNum = allVols.size();
+		allVols.size();
 
 		for (Object obj : treeView.getRoot().getChildren()) {
 			((VolumePreview) ((VolumeCell) obj).getValue()).setImage();
@@ -536,7 +536,6 @@ public class Main extends Application {
 	 * @param srchText
 	 *            what we are searching for
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void userSearch(String field, String srchText) {
 		try {
 			ArrayList<Issue> results = LocalDB.searchIssue(field, "%" + srchText + "%", "LIKE");
@@ -565,11 +564,9 @@ public class Main extends Application {
 	 * @param issue
 	 *            - this isssue that should be removed
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void afterIssueUpdate(Issue issue) {
 		allIssues.remove(issue);
 		TreeItem tempRoot = treeView.getRoot();
-		VolumeCell tempCell = null;
 		// VolumePreview tempVP = null;
 		ObservableList oldList = tempRoot.getChildren();
 
@@ -595,8 +592,6 @@ public class Main extends Application {
 	 */
 	public static void afterVolumeUpdate(Volume vol) {
 		allVols.remove(vol);
-		VolumePreview deleteMe = null;
-
 		TreeItem tempRoot = treeView.getRoot();
 		VolumeCell tempCell = null;
 		// VolumePreview tempVP = null;

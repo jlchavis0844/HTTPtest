@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import model.*;
-import requests.CVrequest;
 import requests.GBrequest;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -20,17 +19,13 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import localDB.LocalDB;
 
-@SuppressWarnings("restriction")
+
 public class AddGame {
 	private Button removeButton;
 	private Button srchButton;

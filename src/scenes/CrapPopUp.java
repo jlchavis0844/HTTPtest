@@ -15,7 +15,12 @@ import javax.swing.JPanel;
 
 public class CrapPopUp extends JDialog implements ActionListener {
 	
-  public CrapPopUp(JFrame parent, String title, BufferedImage img) {
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+public CrapPopUp(JFrame parent, String title, BufferedImage img) {
     
 	  super(parent, title, true);
 	  

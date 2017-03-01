@@ -242,13 +242,15 @@ public class Game {
 	}
 	
 	public void populate(){
+		if(!full){
+			game = GBrequest.getFullGame(api_detail_url);
+			init();
+		}
 		full = true;
 		if(check(game, "api_detail_url")){
 			api_detail_url = game.getString("api_detail_url");
 		} else api_detail_url = null;
 		
-		game = GBrequest.getFullGame(api_detail_url);
-		init();
 		
 		if(check(game, "description")){
 			description = game.getString("description");

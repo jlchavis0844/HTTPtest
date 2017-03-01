@@ -95,7 +95,7 @@ public class IssueLoadScreen {
 		layout.setTop(pb);
 		pb.setPrefWidth(400);
 		pb.setVisible(false);
-		layout.setAlignment(pb, Pos.CENTER);
+		BorderPane.setAlignment(pb, Pos.CENTER);
 
 		back = new Button("Back to adding comics");
 		newAdd = new Button("Start add over");

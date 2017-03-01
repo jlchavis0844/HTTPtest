@@ -29,7 +29,7 @@ import model.Issue;
  * upload new ids to database - SQLQuery.sendIDs()<br>
  * get id's from database - SQLQuery.getIDs()<br>
  * 
- * for now, PHP files are located at : http://76.94.123.147:49180
+ * for now, PHP files are located at : http://jchavis.hoptop.org:49180
  * 
  * @author James
  *
@@ -77,7 +77,7 @@ public class SQLQuery {
 	 *            String of the AFTER date "YYYY-MM-DD hr:mn:sc"
 	 * @return ArrayList<String> of the id's in string format
 	 */
-	public static ArrayList<String> getIDs(String user, String pass, String timeStamp) {
+	public static ArrayList<String> getComicIDs(String user, String pass, String timeStamp) {
 		JSONObject jo = new JSONObject();
 		jo.put("user", user);
 		jo.put("password", pass);
@@ -85,7 +85,7 @@ public class SQLQuery {
 
 		ArrayList<String> retVals = new ArrayList<>();
 		try {
-			HttpResponse<JsonNode> response = Unirest.post("http://76.94.123.147:49180/LBgetID.php")
+			HttpResponse<JsonNode> response = Unirest.post("http://jchavis.hoptop.org:49180/LBgetID.php")
 					.header("accept", "application/json").header("Content-Type", "application/json").body(jo).asJson();
 			JSONArray ja = response.getBody().getObject().getJSONArray("id_list");
 
@@ -112,7 +112,7 @@ public class SQLQuery {
 	 *            String of the AFTER date "YYYY-MM-DD hr:mn:sc"
 	 * @return ArrayList<String> of the id's in a string format
 	 */
-	public static ArrayList<String> getDeletedIDs(String user, String pass, String timeStamp) {
+	public static ArrayList<String> getDeletedComicIDs(String user, String pass, String timeStamp) {
 		JSONObject jo = new JSONObject();
 		jo.put("user", user);
 		jo.put("password", pass);
@@ -120,7 +120,7 @@ public class SQLQuery {
 
 		ArrayList<String> retVals = new ArrayList<>();
 		try {
-			HttpResponse<JsonNode> response = Unirest.post("http://76.94.123.147:49180/LBgetDeletedID.php")
+			HttpResponse<JsonNode> response = Unirest.post("http://jchavis.hoptop.org:49180/LBgetDeletedID.php")
 					.header("accept", "application/json").header("Content-Type", "application/json").body(jo).asJson();
 			JSONArray ja = response.getBody().getObject().getJSONArray("id_list");
 
@@ -149,7 +149,7 @@ public class SQLQuery {
 	 *         'PRIMARY'"}<br>
 	 *         on insert success {"91011" : "2016-10-02 12:13:14"}
 	 */
-	public static JSONObject sendIDs(String user, String pass, String[] idArr) {
+	public static JSONObject sendComicIDs(String user, String pass, String[] idArr) {
 		JSONObject retVal = null;
 		JSONArray ja = new JSONArray();
 		JSONObject jo = new JSONObject();
@@ -303,14 +303,14 @@ public class SQLQuery {
 
 	public static void fullSync() {
 		String info[] = getLoginInfo();
-		ArrayList<String> newRemote = getIDs(info[0], info[1], info[2]);
+		ArrayList<String> newRemote = getComicIDs(info[0], info[1], info[2]);
 		for (String s : newRemote) {
 			if (!LocalDB.exists(s, LocalDB.ISSUE)) {
 				LocalDB.addIssue(new Issue(CVrequest.getIssue(s)));
 			}
 		}
 
-		ArrayList<String> deletedIDs = getDeletedIDs(info[0], info[1], info[2]);
+		ArrayList<String> deletedIDs = getDeletedComicIDs(info[0], info[1], info[2]);
 		for (String s : deletedIDs) {
 			if (LocalDB.exists(s, LocalDB.ISSUE)) {
 				LocalDB.deleteIssueByID(s);
@@ -319,7 +319,7 @@ public class SQLQuery {
 
 		String[] allIDs = LocalDB.getAllIDs();
 		if (allIDs != null && allIDs.length != 0) {
-			sendIDs(info[0], info[1], allIDs);
+			sendComicIDs(info[0], info[1], allIDs);
 			SQLQuery.updateLoginInfo(info[0], getCurrentTimeStamp(), info[3]);
 		}
 	}

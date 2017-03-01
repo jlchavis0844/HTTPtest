@@ -1,13 +1,9 @@
 package requests;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.swing.JFrame;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,10 +14,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
 import model.Game;
-import scenes.CrapPopUp;
 
 public class GBrequest {
 	private static String api_key = "db50a857ef685a24f0e3f58e4412273b01d8a426";

@@ -1,19 +1,13 @@
 package scenes;
 
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -22,23 +16,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import localDB.LocalDB;
-import model.CharCred;
 import model.Game;
-import javafx.scene.input.MouseEvent;
 
 public class SearchGameDetail extends BorderPane {
-	private Button editButton;
-	private ArrayList<CharCred> chars;
-	private String link;
 	private WebView webView;
-	private WebEngine webEngine;
-	private String webLink;
 	private StackPane browser;
 	private WebView webplay;
 	private ImageView imageView;
@@ -54,7 +38,7 @@ public class SearchGameDetail extends BorderPane {
 		Label nameLbl = new Label("Name"); //1
 		Label pubLbl = new Label("Publisher"); //2
 		Label rDateLbl = new Label("Release Date");//3
-		Label platformLbl = new Label("Platforms");//4
+		new Label("Platforms");
 		Label franchiseLbl = new Label("Franchise");//5
 		// left.getChildren().addAll(volNameLbl,gameNumLbl,nameLbl,cDateLbl,
 		// writerLbl);
