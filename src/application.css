@@ -261,7 +261,7 @@ The collection LIST (not tree)
 
 .list-cell:selected{
 	-fx-border-width:5px;
-    -fx-border-color:blue;
+    -fx-border-color:grey;
 }
 
 

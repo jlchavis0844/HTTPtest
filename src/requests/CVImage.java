@@ -240,7 +240,8 @@ public class CVImage {
 	public static int cleanAllLocalImgs(){
 		int retVal = 0;
 		try {
-			return (cleanLocalImgs(ISSUE) + cleanLocalImgs(VOLUME));
+			return (cleanLocalImgs(ISSUE) + cleanLocalImgs(VOLUME)
+			+ cleanLocalImgs(GAME));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -256,11 +257,11 @@ public class CVImage {
 	 */
 	public static int cleanLocalImgs(int type) throws IOException{
 		String path = "";
-		if(type == CVImage.ISSUE) {
-			path = "./images/game";
-		} else if(type == CVImage.VOLUME) {
+		if(type == ISSUE) {
+			path = "./images/issue";
+		} else if(type == VOLUME) {
 			path = "./images/volume";
-		} else if(type == CVImage.GAME){
+		} else if(type == GAME){
 			path = "./images/game";
 		}
 		System.out.println("Starting with " + path);

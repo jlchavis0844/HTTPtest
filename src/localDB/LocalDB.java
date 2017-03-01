@@ -283,7 +283,7 @@ public class LocalDB {
 			String formattedDate = sdf.format(date);
 
 			jo.put("timeStamp", formattedDate);
-			jo.put("JSON", jo.toString());
+			//jo.put("JSON", jo.toString());
 
 			String[] names = JSONObject.getNames(jo);
 			String qNames = "INSERT INTO game (";
@@ -297,7 +297,7 @@ public class LocalDB {
 
 			for (int i = 0; i < nameNum; i++) {
 				currName = names[i];
-				if (!jo.isNull(currName) && !currName.equals("image")) {
+				if (!jo.isNull(currName) && !currName.equals("image") && !currName.equals("JSON")) {
 					value = jo.get(names[i]).toString();
 					if (!value.equals("[]")) {
 						goodNames.add(names[i]);
@@ -368,9 +368,9 @@ public class LocalDB {
 			Statement stat = conn.createStatement();
 
 			String table = "";// choose the table
-			if (type == GBImage.ISSUE) {
+			if (type == CVImage.ISSUE) {
 				table = "issue";
-			} else if(type == GBImage.VOLUME){
+			} else if(type == CVImage.VOLUME){
 				table = "volume";
 			} else table = "game";
 

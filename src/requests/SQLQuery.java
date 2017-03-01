@@ -29,7 +29,7 @@ import model.Issue;
  * upload new ids to database - SQLQuery.sendIDs()<br>
  * get id's from database - SQLQuery.getIDs()<br>
  * 
- * for now, PHP files are located at : http://jchavis.hoptop.org:49180
+ * for now, PHP files are located at : http://jchavis.hopto.org:49180
  * 
  * @author James
  *
@@ -85,7 +85,7 @@ public class SQLQuery {
 
 		ArrayList<String> retVals = new ArrayList<>();
 		try {
-			HttpResponse<JsonNode> response = Unirest.post("http://jchavis.hoptop.org:49180/LBgetID.php")
+			HttpResponse<JsonNode> response = Unirest.post("http://jchavis.hopto.org:49180/LBgetID.php")
 					.header("accept", "application/json").header("Content-Type", "application/json").body(jo).asJson();
 			JSONArray ja = response.getBody().getObject().getJSONArray("id_list");
 
@@ -120,7 +120,7 @@ public class SQLQuery {
 
 		ArrayList<String> retVals = new ArrayList<>();
 		try {
-			HttpResponse<JsonNode> response = Unirest.post("http://jchavis.hoptop.org:49180/LBgetDeletedID.php")
+			HttpResponse<JsonNode> response = Unirest.post("http://jchavis.hopto.org:49180/LBgetDeletedID.php")
 					.header("accept", "application/json").header("Content-Type", "application/json").body(jo).asJson();
 			JSONArray ja = response.getBody().getObject().getJSONArray("id_list");
 

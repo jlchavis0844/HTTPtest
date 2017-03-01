@@ -42,8 +42,9 @@ public class Game {
 		platsLong = new ArrayList<String>();
 		characters = new ArrayList<String>();
 		genres = new ArrayList<String>();
-		publishers = new ArrayList<String>(); 
-		
+		publishers = new ArrayList<String>();
+		game.put("JSON", game.toString());
+
 		if (check(game, "id")) {
 			this.id = game.get("id").toString();
 		} else {
@@ -65,6 +66,10 @@ public class Game {
 				deck = game.get("deck").toString();
 			} else
 				deck = null;
+			
+			if(check(game, "api_detail_url")){
+				api_detail_url = game.getString("api_detail_url");
+			}
 			
 			System.out.println(game.get("original_release_date").equals(null));
 
@@ -245,8 +250,10 @@ public class Game {
 		if(!full){
 			game = GBrequest.getFullGame(api_detail_url);
 			init();
+			full = true;
 		}
-		full = true;
+		game.put("JSON", game.toString());
+		
 		if(check(game, "api_detail_url")){
 			api_detail_url = game.getString("api_detail_url");
 		} else api_detail_url = null;

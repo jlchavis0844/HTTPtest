@@ -27,6 +27,7 @@ import scenes.AddComic;
 import scenes.AddGame;
 import scenes.DetailView;
 import scenes.GameDetail;
+import scenes.GameLoadScreen;
 import scenes.GamePreview;
 import scenes.IssueLoadScreen;
 import scenes.IssuePreview;
@@ -63,6 +64,7 @@ public class Main extends Application {
 	private static List<VolumePreview> volPreviews;// holds VolumePreviews generated for every volume
 	private static List<GamePreview> gamePreviews;
 	private static HashMap<String, GameDetail> gameDetails;
+	private static ArrayList<Game> gameList;
 	private static ScrollPane leftScroll;// holds the tree that lists volumes
 	private HBox hbox;// for the top row of border frame
 	private Button addButton; // launches addComic scene
@@ -96,14 +98,16 @@ public class Main extends Application {
 		
 		gameTab = new Tab("\tGames\t");
 		allGames = new HashMap<String, Game>();
-		ArrayList<Game> tArr = LocalDB.getAllGames();
+		gameList = LocalDB.getAllGames();
 		gamePreviews = new ArrayList<>();
 		gameDetails = new HashMap<String, GameDetail>();
-		tArr.forEach(currGame ->{
-			allGames.put(currGame.getID(), currGame);
-			gameDetails.put(currGame.getID(), new GameDetail(currGame, false));
-			gamePreviews.add(new GamePreview(currGame));
-		});
+		if(gameList != null){
+			gameList.forEach(currGame ->{
+				allGames.put(currGame.getID(), currGame);
+				gameDetails.put(currGame.getID(), new GameDetail(currGame, false));
+				gamePreviews.add(new GamePreview(currGame));
+			});
+		} else gameList = new ArrayList<>();
 
 		layout = new BorderPane();// main scene is border pane
 		addedIssues = new ArrayList<Issue>();// for addComics scene
@@ -340,16 +344,17 @@ public class Main extends Application {
 		addGames.setOnAction(e -> {
 			new AddGame(addedGames);
 			System.out.println("Adding the following games:");
-			addedGames.forEach(currGame -> {
-				System.out.print(currGame.getName() + "\t");
-			});
 			
-			//TODO: erase below, for debugging
-			addedGames.forEach(currGame -> {
-				allGames.put(currGame.getID(),currGame);
-				gamePreviews.add(new GamePreview(currGame));
-			});
-			gameTreeView.setRoot(buildGameRoot());
+			if(addedGames.size() != 0){
+				addedGames.forEach(currGame -> {
+					System.out.print(currGame.getName() + "\t");
+				});
+			if(gameList == null){
+				gameList = new ArrayList<>();
+			}
+			
+			new GameLoadScreen(addedGames, gameList, gamePreviews);
+			}
 		});
 		
 		
@@ -412,7 +417,6 @@ public class Main extends Application {
 	public static void main(String[] args) {
 //		// ArrayList<Volume> allVols = LocalDB.getAllVolumes();
 //		// allVols.forEach(vol -> {
-//		// CVImage.addVolumeImg(vol, "thumb");
 //		// CVImage.addVolumeImg(vol, "medium");
 //		//
 //		// });
@@ -448,7 +452,7 @@ public class Main extends Application {
 		addedIssues.clear();
 		backgroundLoadIssues();
 	}
-	
+
 	/**
 	 * This will build a tree root that has the following structure<br>
 	 * <pre>|->Volumes<br></pre>
@@ -616,18 +620,30 @@ public class Main extends Application {
 	 * new issues/changes.
 	 */
 	public static void updateCollection() {
-		allVols = LocalDB.getAllVolumes(); // get all voulmes
+		allVols = LocalDB.getAllVolumes(); // get all volumes
 		allIssues = LocalDB.getAllIssues();//get all issues
-		
+
 		volPreviews.clear();//wipeout previews 
 
 		for (Volume v : allVols) { /// rebuild volumes
 			volPreviews.add(new VolumePreview(v, allIssues));
 		}
+		
 
 		LocalDB.sortVolumes(allVols);
 		treeView.setRoot(buildRoot("Volumes"));
-		gameTreeView.setRoot(buildGameRoot());
 		backgroundLoadVols();
+	}
+	
+	public static void updateGames(){
+		gameList = LocalDB.getAllGames();
+		gamePreviews.clear();
+		
+		for(Game g: gameList){
+			gameDetails.put(g.getID(), new GameDetail(g, false));
+			gamePreviews.add(new GamePreview(g));
+		}
+		gameTreeView.setRoot(buildGameRoot());
+		
 	}
 }
